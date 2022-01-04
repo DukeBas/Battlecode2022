@@ -15,17 +15,17 @@ public abstract class Robot {
     /**
      * We will use this variable to count the number of turns this robot has been alive.
      */
-    private int turnCount = 0;
+    protected int turnCount = 0;
 
     /**
      * Helper field to easily access a robots action range.
      */
-    private final int actionRadiusSquared;
+    protected final int actionRadiusSquared;
 
     /**
      * Helper field to easily access a robots vision range.
      */
-    private final int visionRadiusSquared;
+    protected final int visionRadiusSquared;
 
     /**
      * A random number generator.
