@@ -19,6 +19,19 @@ public class Miner extends Robot {
      */
     @Override
     void run() throws GameActionException {
+
+        //TODO find all resources in range.
+
+        //TODO filter resources to mining range (2 r^2)
+
+        //TODO mine gold around us first
+
+        //TODO mine lead around us
+
+        //TODO do not mine if it is the last lead from the pile?
+
+        //TODO pathfind to gold sources if they exist, else go to lead sources with more than 1
+
         // Try to mine on squares around us.
         MapLocation me = rc.getLocation();
         for (int dx = -1; dx <= 1; dx++) {
@@ -34,6 +47,7 @@ public class Miner extends Robot {
                 }
             }
         }
+
 
         // Also try to move randomly.
         Direction dir = Constants.directions[rng.nextInt(Constants.directions.length)];
