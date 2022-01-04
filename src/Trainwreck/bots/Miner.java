@@ -1,6 +1,8 @@
 package Trainwreck.bots;
 
 import Trainwreck.util.Constants;
+import Trainwreck.util.DirectionBasedPathfinding;
+import Trainwreck.util.Pathfinding;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
@@ -9,6 +11,7 @@ import battlecode.common.RobotController;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class Miner extends Robot {
 
@@ -83,15 +86,37 @@ public class Miner extends Robot {
             }
         }
 
-        //TODO pathfind to gold sources if they exist, else go to lead sources with more than 1
-
-
-        // Also try to move randomly.
-        Direction dir = Constants.directions[rng.nextInt(Constants.directions.length)];
-        if (rc.canMove(dir)) {
-            rc.move(dir);
-            System.out.println("I moved!");
+        /*
+         * If there is a gold resource in sight, travel towards it. Otherwise, go to the largest lead deposit nearby.
+         * Since array is sorted, if the first place does not contain gold, none will. If the first place does
+         * contain gold, then it automatically also contains the most amount available nearby.
+         * Do not go to lead deposits with only 1 left.
+         */
+        Pathfinding pathfinder = new DirectionBasedPathfinding();
+        Direction dir;
+        boolean atTarget = false; // TODO change this, this setup is very convoluted
+        if (ResourceLocations.size() > 0) { // there are targets
+            LocationWithResources target = ResourceLocations.get(0);
+            if (myLocation.equals(target.loc)) {
+                atTarget = true;
+            }
+            if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
+                // move randomly
+                dir = Constants.directions[rng.nextInt(Constants.directions.length)];
+            } else {
+                dir = pathfinder.getDirection(myLocation, target.loc);
+            }
+        } else {
+            // move randomly
+            dir = Constants.directions[rng.nextInt(Constants.directions.length)];
         }
+
+        // try to move toward target, if not already there
+        if (!atTarget && rc.canMove(dir)) { // do not move if already at target
+            rc.move(dir);
+        }
+
+
     }
 }
 

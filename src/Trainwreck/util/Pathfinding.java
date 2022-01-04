@@ -40,22 +40,3 @@ public interface Pathfinding {
     Direction getDirection(MapLocation source, MapLocation target, RobotController rc);
 }
 
-/**
- * Simple pathfinding going straight to target, ignoring terrain and other robots.
- */
-class DirectionBasedPathfinding implements Pathfinding {
-    @Override
-    public Direction getDirection(MapLocation source, MapLocation target) {
-        return source.directionTo(target);
-    }
-
-    @Override
-    public Direction getDirection(MapLocation source, MapLocation target, MapLocation[] terrain) {
-        return getDirection(source, target);
-    }
-
-    @Override
-    public Direction getDirection(MapLocation source, MapLocation target, RobotController rc) {
-        return getDirection(source, target);
-    }
-}
