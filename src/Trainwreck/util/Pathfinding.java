@@ -21,8 +21,8 @@ public interface Pathfinding {
     /**
      * Returns direction robot should take to find a path from source to target.
      *
-     * @param source location.
-     * @param target location.
+     * @param source  location.
+     * @param target  location.
      * @param terrain precomputed array of nearby terrain.
      * @return direction to take.
      */
@@ -33,9 +33,28 @@ public interface Pathfinding {
      *
      * @param source location.
      * @param target location.
-     * @param rc RobotController object of robot that wants to travel from source to target.
+     * @param rc     RobotController object of robot that wants to travel from source to target.
      * @return direction to take.
      */
     Direction getDirection(MapLocation source, MapLocation target, RobotController rc);
 }
 
+/**
+ * Simple pathfinding going straight to target, ignoring terrain and other robots.
+ */
+class DirectionBasedPathfinding implements Pathfinding {
+    @Override
+    public Direction getDirection(MapLocation source, MapLocation target) {
+        return source.directionTo(target);
+    }
+
+    @Override
+    public Direction getDirection(MapLocation source, MapLocation target, MapLocation[] terrain) {
+        return getDirection(source, target);
+    }
+
+    @Override
+    public Direction getDirection(MapLocation source, MapLocation target, RobotController rc) {
+        return getDirection(source, target);
+    }
+}
