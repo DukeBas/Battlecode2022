@@ -18,6 +18,16 @@ public abstract class Robot {
     private int turnCount = 0;
 
     /**
+     * Helper field to easily access a robots action range.
+     */
+    private final int actionRadiusSquared;
+
+    /**
+     * Helper field to easily access a robots vision range.
+     */
+    private final int visionRadiusSquared;
+
+    /**
      * A random number generator.
      * We will use this RNG to make some random moves. The Random class is provided by the java.util.Random
      * import at the top of this file. Here, we *seed* the RNG with a constant number (6147); this makes sure
@@ -28,6 +38,9 @@ public abstract class Robot {
     public Robot(RobotController rc) {
         this.rc = rc;
         System.out.println("Hello world! I am a " + this.rc.getType());
+
+        actionRadiusSquared = rc.getType().actionRadiusSquared; // Need to check how this works out for Lab
+        visionRadiusSquared = rc.getType().visionRadiusSquared;
 
         /* This code runs during the entire lifespan of the robot, which is why it is in an infinite
          * loop. If we ever leave this loop and return from run(), the robot dies! At the end of the
