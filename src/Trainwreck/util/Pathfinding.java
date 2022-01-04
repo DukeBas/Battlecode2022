@@ -10,31 +10,32 @@ import battlecode.common.RobotController;
 public interface Pathfinding {
     /**
      * Returns direction robot should take to find a path from source to target.
-     * Does not account for terrain.
+     * Can not account for terrain or other robots.
      *
-     * @param source location.
-     * @param target location.
-     * @return direction to take.
+     * @param source location
+     * @param target location
+     * @return direction to take
      */
     Direction getDirection(MapLocation source, MapLocation target);
 
     /**
      * Returns direction robot should take to find a path from source to target.
+     * Could not easily account for other robots, possibly by setting certain squares as impassable.
      *
-     * @param source  location.
-     * @param target  location.
-     * @param terrain precomputed array of nearby terrain.
-     * @return direction to take.
+     * @param source  location
+     * @param target  location
+     * @param terrain precomputed array of nearby terrain
+     * @return direction to take
      */
     Direction getDirection(MapLocation source, MapLocation target, MapLocation[] terrain);
 
     /**
      * Returns direction robot should take to find a path from source to target.
      *
-     * @param source location.
-     * @param target location.
-     * @param rc     RobotController object of robot that wants to travel from source to target.
-     * @return direction to take.
+     * @param source location
+     * @param target location
+     * @param rc     RobotController object of robot that wants to travel from source to target
+     * @return direction to take
      */
     Direction getDirection(MapLocation source, MapLocation target, RobotController rc);
 }
