@@ -19,8 +19,15 @@ public class Miner extends Robot {
      */
     @Override
     void run() throws GameActionException {
+        MapLocation myLocation = rc.getLocation();
 
-        //TODO find all resources in range.
+        /*
+         * find all resources in range.
+         */
+        // get all map locations in sight
+        MapLocation[] nearbyLocations = rc.getAllLocationsWithinRadiusSquared(myLocation, 1000); // uses 1000 instead of vision range as it will only go up to robot vision range anyways
+        // Filter out locations without resources, add the number of resources in a combined object.
+
 
         //TODO filter resources to mining range (2 r^2)
 
@@ -55,5 +62,20 @@ public class Miner extends Robot {
             rc.move(dir);
             System.out.println("I moved!");
         }
+    }
+}
+
+/**
+ * Record type of MapLocation and the amount of lead and gold on that position.
+ */
+class LocationWithResources {
+    public MapLocation loc;
+    public int lead;
+    public int gold;
+
+    LocationWithResources(MapLocation loc, int lead, int gold) {
+        this.loc = loc;
+        this.lead = lead;
+        this.gold = gold;
     }
 }
