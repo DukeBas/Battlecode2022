@@ -57,29 +57,33 @@ public class Miner extends Robot {
         // Depending on list implementation it should still be sorted, but to be sure.
         Collections.sort(MineableLocations); // TODO find out if this really is unnecessary
 
-        //TODO mine gold around us first
-
-        //TODO mine lead around us
-
-        //TODO do not mine if it is the last lead from the pile?
-
-        //TODO pathfind to gold sources if they exist, else go to lead sources with more than 1
-
-        // Try to mine on squares around us.
-        MapLocation me = rc.getLocation();
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                MapLocation mineLocation = new MapLocation(me.x + dx, me.y + dy);
-                // Notice that the Miner's action cooldown is very low.
-                // You can mine multiple times per turn!
-                while (rc.canMineGold(mineLocation)) {
-                    rc.mineGold(mineLocation);
-                }
-                while (rc.canMineLead(mineLocation)) {
-                    rc.mineLead(mineLocation);
-                }
+        /*
+         * Mine highest valued tiles around us first. Mining gold first.
+         */
+        for (LocationWithResources lwr : MineableLocations) {
+            if (!rc.isActionReady()) {
+                // if no more action can be taken, break out of loop to save bytecode.
+                break;
+            }
+            // mine gold as long as it's available
+            while (rc.canMineGold(lwr.loc)) {
+                rc.mineGold(lwr.loc);
             }
         }
+        for (LocationWithResources lwr : MineableLocations) {
+            if (!rc.isActionReady()) {
+                // if no more action can be taken, break out of loop to save bytecode.
+                break;
+            }
+            // mines until there is one lead left.
+            int leadLeft = rc.senseLead(lwr.loc);
+            while (leadLeft > 1 && rc.canMineLead(lwr.loc)) {
+                rc.mineLead(lwr.loc);
+                leadLeft--;
+            }
+        }
+
+        //TODO pathfind to gold sources if they exist, else go to lead sources with more than 1
 
 
         // Also try to move randomly.
