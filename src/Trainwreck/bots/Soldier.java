@@ -1,6 +1,9 @@
 package Trainwreck.bots;
 
 import Trainwreck.util.Constants;
+import Trainwreck.util.DirectionBasedPathfinding;
+import Trainwreck.util.Pathfinding;
+import Trainwreck.util.RandomPreferLessRubblePathfinding;
 import battlecode.common.*;
 
 import java.util.Collections;
@@ -21,6 +24,8 @@ public class Soldier extends Robot {
         // Get the enemy team
         Team opponent = rc.getTeam().opponent();
 
+        MapLocation myLocation = rc.getLocation();
+
         /*
          * Get nearby enemies.
          */
@@ -33,9 +38,9 @@ public class Soldier extends Robot {
         if (attackableEnemies.length > 0) {
             MapLocation toAttack = attackableEnemies[0].location;
             int lowestHP = attackableEnemies[0].health;
-            for (int i = 1; i < attackableEnemies.length; i++){
+            for (int i = 1; i < attackableEnemies.length; i++) {
                 RobotInfo current = attackableEnemies[i];
-                if (current.health < lowestHP){
+                if (current.health < lowestHP) {
                     toAttack = current.location;
                     lowestHP = current.health;
                 }
@@ -47,11 +52,34 @@ public class Soldier extends Robot {
         }
 
 
-        // Also try to move randomly.
-        Direction dir = Constants.directions[rng.nextInt(Constants.directions.length)];
+        /*
+         * Move to enemy if one is in vision but not attacking range.
+         * Else, move randomly.
+         */
+        Pathfinding pathfinder;
+        if (attackableEnemies.length == 0 && nearbyEnemies.length > 0) {
+            // move towards an enemy.
+//            rc.setIndicatorString("Trying direction based");
+            pathfinder = new DirectionBasedPathfinding();
+        } else {
+            // move semi randomly
+//            rc.setIndicatorString("Trying random based");
+            pathfinder = new RandomPreferLessRubblePathfinding();
+        }
+        Direction dir;
+        try {
+            dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
+        } catch (Exception e) {
+            rc.setIndicatorString(e.toString());
+            dir = Direction.NORTHEAST;
+        }
+
+        /*
+         * Move if it is possible.
+         */
+//        rc.setIndicatorString("Moving to " + dir);
         if (rc.canMove(dir)) {
             rc.move(dir);
-            System.out.println("I moved!");
         }
     }
 }
