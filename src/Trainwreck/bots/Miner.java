@@ -3,6 +3,7 @@ package Trainwreck.bots;
 import Trainwreck.util.Constants;
 import Trainwreck.util.DirectionBasedPathfinding;
 import Trainwreck.util.Pathfinding;
+import Trainwreck.util.RandomPreferLessRubblePathfinding;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
@@ -93,12 +94,13 @@ public class Miner extends Robot {
          * Do not go to lead deposits with only 1 left.
          */
         Pathfinding pathfinder = new DirectionBasedPathfinding();
+        Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
         Direction dir;
         if (ResourceLocations.size() > 0) { // there are targets
             LocationWithResources target = ResourceLocations.get(0);
             if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
                 // move randomly
-                dir = Constants.directions[rng.nextInt(Constants.directions.length)];
+                dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
             } else { // find direction to target
                 dir = pathfinder.getDirection(myLocation, target.loc, rc);
                 if (myLocation.equals(target.loc)) { // Stand still if at target
@@ -107,7 +109,7 @@ public class Miner extends Robot {
             }
         } else {
             // move randomly
-            dir = Constants.directions[rng.nextInt(Constants.directions.length)];
+            dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
         }
 
         // try to move toward target, if not already there
