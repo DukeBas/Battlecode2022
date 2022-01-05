@@ -22,6 +22,11 @@ public class Archon extends Robot {
         RobotType.SOLDIER,
         RobotType.MINER,
         RobotType.SOLDIER,
+        RobotType.MINER,
+        RobotType.SOLDIER,
+        RobotType.MINER,
+        RobotType.SOLDIER,
+        RobotType.BUILDER,
     };
 
     /**
@@ -65,8 +70,9 @@ public class Archon extends Robot {
         }
         
         // just reiterate over the build selection repeatedly
-        while (this.attemptBuild(buildSelection[this.buildSelector])) {
-            this.buildSelector = (this.buildSelector + 1) % buildSelection.length;
+        int index = this.buildSelector % buildSelection.length;
+        if (this.attemptBuild(buildSelection[index])) {
+            this.buildSelector++;
         }
     }
 
@@ -74,6 +80,13 @@ public class Archon extends Robot {
      * Tries to build a specific robot type in any direction.
      */
     private boolean attemptBuild(RobotType type) throws GameActionException {
+        // don't take all the resources yourself, but give other
+        // archons/builders a chance to build; there's at most 4 archons, so
+        // this is *slightly* more fair than first-come-first-serve
+        if (Robot.rng.nextInt() % 4 != 0) {
+            return false;
+        }
+
         for (Direction direction : Constants.cardinalDirections) {
             if (this.rc.canBuildRobot(type, direction)) {
                 this.rc.buildRobot(type, direction);
