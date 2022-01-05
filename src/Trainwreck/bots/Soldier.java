@@ -53,25 +53,21 @@ public class Soldier extends Robot {
 
 
         /*
-         * Move to enemy if one is in vision but not attacking range.
-         * Else, move randomly.
+         * Move to enemy if one is in vision range. Preferring target of attack.
          */
-        Pathfinding pathfinder;
-        if (attackableEnemies.length == 0 && nearbyEnemies.length > 0) {
+        Direction dir;
+        if (nearbyEnemies.length > 0) {
             // move towards an enemy.
-//            rc.setIndicatorString("Trying direction based");
-            pathfinder = new DirectionBasedPathfinding();
+            Pathfinding pathfinder = new DirectionBasedPathfinding();
+            if (attackableEnemies.length > 0) { // prefer the enemy we are attacking currently
+                dir = pathfinder.getDirection(myLocation, attackableEnemies[0].location, rc);
+            } else {
+                dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
+            }
         } else {
             // move semi randomly
-//            rc.setIndicatorString("Trying random based");
-            pathfinder = new RandomPreferLessRubblePathfinding();
-        }
-        Direction dir;
-        try {
-            dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
-        } catch (Exception e) {
-            rc.setIndicatorString(e.toString());
-            dir = Direction.NORTHEAST;
+            Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
+            dir = pathfinder.getDirection(myLocation, myLocation, rc);
         }
 
         /*
