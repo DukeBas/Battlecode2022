@@ -7,6 +7,16 @@ import battlecode.common.RobotController;
 import java.util.ArrayList;
 
 public class RandomPreferLessRubblePathfinding implements Pathfinding {
+    double preferenceStrength = 5; // Higher means less rubble is preferred even more.
+
+    public RandomPreferLessRubblePathfinding() {
+        // do not change default strength
+    }
+
+    public RandomPreferLessRubblePathfinding(double pref) {
+        this.preferenceStrength = pref;
+    }
+
     @Override
     public Direction getDirection(final MapLocation source, final MapLocation target, RobotController rc) {
         MapLocation myLocation = rc.getLocation();
@@ -22,7 +32,7 @@ public class RandomPreferLessRubblePathfinding implements Pathfinding {
                     int rubble = rc.senseRubble(loc);
 
                     // Determine weight based on action/movement cooldown formula inverse
-                    double weight = 10.0 / (rubble + 10);
+                    double weight = 10.0 / (rubble * preferenceStrength + 10);
                     options.add(new WeightedDirection(d, weight));
                     totalWeight += weight;
                 }
