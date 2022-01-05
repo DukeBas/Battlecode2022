@@ -16,6 +16,6 @@ public interface Pathfinding {
      * @param rc     RobotController object of robot that wants to travel from source to target
      * @return direction to take
      */
-    Direction getDirection(MapLocation source, MapLocation target, RobotController rc);
+    Direction getDirection(final MapLocation source, final MapLocation target, RobotController rc);
 }
 
