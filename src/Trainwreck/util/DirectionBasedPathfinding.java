@@ -9,7 +9,7 @@ import battlecode.common.RobotController;
  */
 public class DirectionBasedPathfinding implements Pathfinding {
     @Override
-    public Direction getDirection(MapLocation source, MapLocation target, RobotController rc) {
+    public Direction getDirection(final MapLocation source, final MapLocation target, RobotController rc) {
         return source.directionTo(target);
     }
 }
