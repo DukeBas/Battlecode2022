@@ -21,6 +21,16 @@ public class Constants {
             Direction.NORTHWEST,
     };
 
+    /**
+     * Array containing all cardinal directions.
+     */
+    public static final Direction[] cardinalDirections = {
+            Direction.NORTH,
+            Direction.EAST,
+            Direction.SOUTH,
+            Direction.WEST,
+    };
+
 //    /**
 //     * Directions array with center added to it.
 //     */
@@ -41,4 +51,10 @@ public class Constants {
 //     * Highest number we can store in the shared memory.
 //     */
 //    int MAXIMUM_VALUE_COMMUNICATION = 65535; // 2^16 - 1
+
+    /**
+     * Directions array with center added to it.
+     */
+    public static final Direction[] directionsWCenter = Stream.concat(Arrays.stream(directions),
+            Arrays.stream(new Direction[]{Direction.CENTER})).toArray(Direction[]::new);
 }

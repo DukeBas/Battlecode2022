@@ -5,8 +5,24 @@ import battlecode.common.*;
 
 import java.util.Objects;
 
-
 public class Archon extends Robot {
+    /**
+     * Modulates between entries in buildModulation, so it builds a specific
+     * ratio of bots.
+     */
+    private int buildSelector = 0;
+
+    /**
+     * The ratio of different bot types that the archon will build.
+     */
+    private static final RobotType[] buildSelection = {
+        RobotType.MINER,
+        RobotType.SOLDIER,
+        RobotType.MINER,
+        RobotType.SOLDIER,
+        RobotType.MINER,
+        RobotType.SOLDIER,
+    };
 
     /**
      * Dimensions of the map. Map ranges between 20x20 and 60x60.
@@ -47,6 +63,25 @@ public class Archon extends Robot {
                 rc.buildRobot(RobotType.SOLDIER, dir);
             }
         }
+        
+        // just reiterate over the build selection repeatedly
+        while (this.attemptBuild(buildSelection[this.buildSelector])) {
+            this.buildSelector = (this.buildSelector + 1) % buildSelection.length;
+        }
+    }
+
+    /**
+     * Tries to build a specific robot type in any direction.
+     */
+    private boolean attemptBuild(RobotType type) throws GameActionException {
+        for (Direction direction : Constants.cardinalDirections) {
+            if (this.rc.canBuildRobot(type, direction)) {
+                this.rc.buildRobot(type, direction);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
