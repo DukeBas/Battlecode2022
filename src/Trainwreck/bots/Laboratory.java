@@ -16,6 +16,8 @@ public class Laboratory extends Robot {
      */
     @Override
     void run() throws GameActionException {
+        if (0 == 1){
 
+        }
     }
 }
