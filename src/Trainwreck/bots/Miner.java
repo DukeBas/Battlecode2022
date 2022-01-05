@@ -104,7 +104,7 @@ public class Miner extends Robot {
                 // move randomly
                 dir = Constants.directions[rng.nextInt(Constants.directions.length)];
             } else {
-                dir = pathfinder.getDirection(myLocation, target.loc);
+                dir = pathfinder.getDirection(myLocation, target.loc, rc);
             }
         } else {
             // move randomly

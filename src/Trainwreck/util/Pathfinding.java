@@ -5,30 +5,9 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 
 /**
- * Interface defines several versions of getDirection(...) with different arguments.
+ * Interface defines getDirection function for pathfinding.
  */
 public interface Pathfinding {
-    /**
-     * Returns direction robot should take to find a path from source to target.
-     * Can not account for terrain or other robots.
-     *
-     * @param source location
-     * @param target location
-     * @return direction to take
-     */
-    Direction getDirection(MapLocation source, MapLocation target);
-
-    /**
-     * Returns direction robot should take to find a path from source to target.
-     * Could not easily account for other robots, possibly by setting certain squares as impassable.
-     *
-     * @param source  location
-     * @param target  location
-     * @param terrain precomputed array of nearby terrain
-     * @return direction to take
-     */
-    Direction getDirection(MapLocation source, MapLocation target, MapLocation[] terrain);
-
     /**
      * Returns direction robot should take to find a path from source to target.
      *
