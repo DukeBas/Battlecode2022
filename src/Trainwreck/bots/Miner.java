@@ -96,13 +96,14 @@ public class Miner extends Robot {
         Direction dir;
         if (ResourceLocations.size() > 0) { // there are targets
             LocationWithResources target = ResourceLocations.get(0);
-            if (myLocation.equals(target.loc)) {
-                dir = Direction.CENTER;
-            } else if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
+            if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
                 // move randomly
                 dir = Constants.directions[rng.nextInt(Constants.directions.length)];
-            } else {
+            } else { // find direction to target
                 dir = pathfinder.getDirection(myLocation, target.loc, rc);
+                if (myLocation.equals(target.loc)) { // Stand still if at target
+                    dir = Direction.CENTER;
+                }
             }
         } else {
             // move randomly
@@ -110,12 +111,10 @@ public class Miner extends Robot {
         }
 
         // try to move toward target, if not already there
-        rc.setIndicatorString("canMove("+dir+") = " + rc.canMove(dir));
+        rc.setIndicatorString("canMove(" + dir + ") = " + rc.canMove(dir));
         if (rc.canMove(dir)) { // do not move if already at target
             rc.move(dir);
         }
-
-
     }
 }
 
