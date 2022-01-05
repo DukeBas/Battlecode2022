@@ -94,13 +94,11 @@ public class Miner extends Robot {
          */
         Pathfinding pathfinder = new DirectionBasedPathfinding();
         Direction dir;
-        boolean atTarget = false; // TODO change this, this setup is very convoluted
         if (ResourceLocations.size() > 0) { // there are targets
             LocationWithResources target = ResourceLocations.get(0);
             if (myLocation.equals(target.loc)) {
-                atTarget = true;
-            }
-            if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
+                dir = Direction.CENTER;
+            } else if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
                 // move randomly
                 dir = Constants.directions[rng.nextInt(Constants.directions.length)];
             } else {
@@ -112,7 +110,8 @@ public class Miner extends Robot {
         }
 
         // try to move toward target, if not already there
-        if (!atTarget && rc.canMove(dir)) { // do not move if already at target
+        rc.setIndicatorString("canMove("+dir+") = " + rc.canMove(dir));
+        if (rc.canMove(dir)) { // do not move if already at target
             rc.move(dir);
         }
 
