@@ -22,11 +22,12 @@ public class FirstCommunicationTest {
         c = new FirstCommunication();
     }
 
-    void testEncodingDecoding(int x, int y) {
+    void testEncodingDecoding(int x, int y, int extra) {
         MapLocation loc = new MapLocation(x, y);
-        int toDecode = c.locationEncoder(loc);
+        int toDecode = c.locationEncoder(loc, extra);
         MapLocation decoded = c.locationDecoder(toDecode);
         assertEquals(loc, decoded);
+        assertEquals(extra, c.locationExtraDecoder(toDecode));
     }
 
     @Test
@@ -36,32 +37,46 @@ public class FirstCommunicationTest {
 
     @Test
     public void testEncodingDecodingBoundary1() {
-        testEncodingDecoding(0, 0);
+        testEncodingDecoding(0, 0, 0);
     }
 
     @Test
     public void testEncodingDecodingBoundary2() {
-        testEncodingDecoding(60, 60);
+        testEncodingDecoding(60, 60, 0);
     }
 
     @Test
     public void testEncodingDecoding1() {
-        testEncodingDecoding(0, 10);
+        testEncodingDecoding(0, 10, 0);
     }
 
     @Test
     public void testEncodingDecoding2() {
-        testEncodingDecoding(10, 0);
+        testEncodingDecoding(10, 0, 0);
     }
 
     @Test
     public void testEncodingDecoding3() {
-        testEncodingDecoding(10, 10);
+        testEncodingDecoding(10, 10, 0);
     }
 
     @Test
     public void testEncodingDecoding4() {
-        testEncodingDecoding(25, 37);
+        testEncodingDecoding(25, 37, 0);
     }
 
+    @Test
+    public void testEncodingDecodingExtra1() {
+        testEncodingDecoding(10, 10, 2);
+    }
+
+    @Test
+    public void testEncodingDecodingExtra2() {
+        testEncodingDecoding(10, 10, 6);
+    }
+
+    @Test
+    public void testEncodingDecodingExtra3() {
+        testEncodingDecoding(10, 10, 11);
+    }
 }
