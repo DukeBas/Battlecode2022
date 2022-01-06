@@ -70,6 +70,7 @@ public interface Communication {
 
     /**
      * Invalidates a location of an enemy archon based on the MapLocation.
+     * Also invalidates potential enemy archon locations.
      *
      * @param loc MapLocation of the archon
      */
