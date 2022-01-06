@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Miner extends Robot {
+    final int MAX_RESOURCE_LOCATIONS = 15; // at least 8
 
     public Miner(RobotController rc) {
         super(rc);
@@ -29,37 +30,66 @@ public class Miner extends Robot {
     void run() throws GameActionException {
         MapLocation myLocation = rc.getLocation();
 
-        /*
-         * find all resources in range, start by getting all map locations in sight.
-         */
-        MapLocation[] nearbyLocations = rc.getAllLocationsWithinRadiusSquared(myLocation, this.visionRadiusSquared);
-
-        /*
-         * Filter out locations without resources, add the number of resources in a combined object.
-         * List sorted first on gold then lead.
-         */
         List<LocationWithResources> ResourceLocations = new ArrayList<>();
-        for (MapLocation loc : nearbyLocations) {
-            int lead = rc.senseLead(loc);
-            int gold = rc.senseGold(loc);
-            if (lead > 0 || gold > 0) {
-                ResourceLocations.add(new LocationWithResources(loc, lead, gold));
-            }
-        }
-        Collections.sort(ResourceLocations);
+        List<LocationWithResources> MineableLocations = new ArrayList<>();
 
         /*
-         * Get the resources that are immediately mineable to us.
-         * Note: could be optimized by not creating a new array, filtering ResourceLocations and rearranging code.
+         * Fills list with locations with resources first with locations with gold,
+         * then with tiles with lead if there are no locations with gold.
+         * Only adds up to MAX_RESOURCE_LOCATIONS number of locations to list.
+         * Starts for lead with locations withing actions radius. Only considers lead with more than 1 remaining.
+         * Keep track if we can mine the resource
          */
-        List<LocationWithResources> MineableLocations = new ArrayList<>();
-        for (LocationWithResources lwr : ResourceLocations) {
-            if (myLocation.distanceSquaredTo(lwr.loc) <= this.actionRadiusSquared) {
-                MineableLocations.add(lwr);
+        MapLocation[] nearbyGold = rc.senseNearbyLocationsWithGold(this.visionRadiusSquared);
+
+        if (nearbyGold.length > 0) {
+            for (MapLocation loc : nearbyGold) {
+                LocationWithResources lwr = new LocationWithResources(loc, rc.senseLead(loc), rc.senseGold(loc));
+                // can't go over maximum number yet, so unchecked
+                ResourceLocations.add(lwr);
+                if (myLocation.distanceSquaredTo(loc) <= this.actionRadiusSquared) { // check if we can mine it
+                    MineableLocations.add(lwr);
+                }
+            }
+        } else {
+            // start by looking at locations with lead in our action radius
+            MapLocation[] mineableLead = rc.senseNearbyLocationsWithLead(this.actionRadiusSquared);
+            for (MapLocation loc : mineableLead) {
+                int lead = rc.senseLead(loc);
+                if (lead > 1) { // can't go over maximum number yet, so unchecked
+                    LocationWithResources lwr = new LocationWithResources(loc, lead, 0);
+                    ResourceLocations.add(lwr);
+                    // we do not need to check if we can mine the resource, we always can
+                    MineableLocations.add(lwr);
+                }
+            }
+
+            // no lead currently mineable, look beyond action range.
+            MapLocation[] nearbyLead = rc.senseNearbyLocationsWithLead(this.visionRadiusSquared);
+            for (MapLocation loc : nearbyLead) {
+                if (ResourceLocations.size() >= MAX_RESOURCE_LOCATIONS) {
+                    break; // prevent any more locations from being added.
+                }
+                int lead = rc.senseLead(loc);
+                if (lead > 1) {
+                    ResourceLocations.add(new LocationWithResources(loc, lead, 0));
+                    // we do not need to check if we can mine the resource, always impossible
+                }
             }
         }
-        // Depending on list implementation it should still be sorted, but to be sure.
-        Collections.sort(MineableLocations); // TODO find out if this really is unnecessary
+        /*
+         * Sort the found locations with resources and go to the best, prioritising gold over lead.
+         * Note: does not actually sort if there are more than 8 items in queue, since then none are in range
+         * (see above), so only the best actually matters, so we remove everything else.
+         *
+         */
+        if (ResourceLocations.size() <= 8) {
+            Collections.sort(ResourceLocations);
+        } else {
+            LocationWithResources best = Collections.max(ResourceLocations);
+            ResourceLocations = new ArrayList<>();
+            ResourceLocations.add(best);
+        }
 
         /*
          * Mine highest valued tiles around us first. Mining gold first.
@@ -91,17 +121,17 @@ public class Miner extends Robot {
          * If there is a gold resource in sight, travel towards it. Otherwise, go to the largest lead deposit nearby.
          * Since array is sorted, if the first place does not contain gold, none will. If the first place does
          * contain gold, then it automatically also contains the most amount available nearby.
-         * Do not go to lead deposits with only 1 left.
+         * Do not go to lead deposits with only 1 left. (see earlier comment for what locations we consider.)
          */
-        Pathfinding pathfinder = new DirectionBasedPathfinding();
-        Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
         Direction dir;
         if (ResourceLocations.size() > 0) { // there are targets
             LocationWithResources target = ResourceLocations.get(0);
             if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
                 // move randomly
+                Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
                 dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
             } else { // find direction to target
+                Pathfinding pathfinder = new DirectionBasedPathfinding();
                 dir = pathfinder.getDirection(myLocation, target.loc, rc);
                 if (myLocation.equals(target.loc)) { // Stand still if at target
                     dir = Direction.CENTER;
@@ -109,6 +139,7 @@ public class Miner extends Robot {
             }
         } else {
             // move randomly
+            Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
             dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
         }
 
