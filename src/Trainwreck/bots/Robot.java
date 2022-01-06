@@ -41,7 +41,12 @@ public abstract class Robot {
 
         actionRadiusSquared = rc.getType().actionRadiusSquared; // Need to check how this works out for Lab
         visionRadiusSquared = rc.getType().visionRadiusSquared;
+    }
 
+    /**
+     * Runs the game loop for the rest of the game and does not return.
+     */
+    public void runGameLoop() {
         /* This code runs during the entire lifespan of the robot, which is why it is in an infinite
          * loop. If we ever leave this loop and return from run(), the robot dies! At the end of the
          * loop, we call Clock.yield(), signifying that we've done everything we want to do.
