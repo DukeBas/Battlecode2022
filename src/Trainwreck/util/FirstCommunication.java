@@ -110,7 +110,7 @@ public class FirstCommunication implements Communication {
 
     private MapLocation[] getMapLocationsArchons(int index_start_archons, int length) throws GameActionException {
         ArrayList<Integer> indices = new ArrayList<>();
-        for (int i = index_start_archons; i < i + length; i++) {
+        for (int i = index_start_archons; i < index_start_archons + length; i++) {
             if (rc.readSharedArray(i) != 0) {
                 indices.add(i);
             }
