@@ -78,6 +78,8 @@ public class FirstCommunication implements Communication {
 
         this.mapWidth = rc.getMapWidth();
         this.mapHeight = rc.getMapHeight();
+
+        System.out.println("WRONG CONSTRUCTOR USED");
     }
 
     public FirstCommunication() {
@@ -144,8 +146,8 @@ public class FirstCommunication implements Communication {
 
 
     private MapLocation getLocationArchonWithIDAtIndex(int index_start_archons, int RobotID) throws GameActionException {
-        for (int i = index_start_archons; i < index_start_archons + 4; i++) {
-            if (locationExtraDecoder(rc.readSharedArray(i)) == RobotID % 15 + 1){//TODO other mapping tech
+        for (int i = index_start_archons; i < index_start_archons + NUMBER_MAX_ARCHONS; i++) {
+            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(RobotID)) {
                 return locationDecoder(rc.readSharedArray(i));
             }
         }
@@ -164,8 +166,8 @@ public class FirstCommunication implements Communication {
 
     @Override
     public void invalidateLocationEnemyArchon(int RobotID) throws GameActionException {
-        for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + 4; i++) {
-            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(RobotID)){
+        for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
+            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(RobotID)) {
                 rc.writeSharedArray(i, encodeID(RobotID));
                 break;
             }
@@ -173,22 +175,35 @@ public class FirstCommunication implements Communication {
     }
 
     @Override
-    public void invalidateLocationEnemyArchon(MapLocation loc) {
-        //TODO
+    public void invalidateLocationEnemyArchon(MapLocation loc) throws GameActionException {
+        for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
+            if (loc.equals(locationDecoder(rc.readSharedArray(i)))) {
+                rc.writeSharedArray(i, locationExtraDecoder(rc.readSharedArray(i)));
+                break;
+            }
+        }
     }
 
     @Override
-    public void updateLocationFriendlyArchon(int RobotID, MapLocation loc) {
-        //TODO
+    public void updateLocationFriendlyArchon(int RobotID, MapLocation loc) throws GameActionException {
+        for (int i = INDEX_START_FRIENDLY_ARCHON; i < INDEX_START_FRIENDLY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
+            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(RobotID)) {
+                rc.writeSharedArray(i, locationEncoder(loc, RobotID));
+            }
+        }
     }
 
     @Override
-    public void updateLocationEnemyArchon(int RobotID, MapLocation loc) {
-        //TODO
+    public void updateLocationEnemyArchon(int RobotID, MapLocation loc) throws GameActionException {
+        for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
+            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(RobotID)) {
+                rc.writeSharedArray(i, locationEncoder(loc, RobotID));
+            }
+        }
     }
 
     @Override
-    public void increaseUnitCounter(int ArchonID, RobotType type) {
+    public void increaseUnitCounter(int ArchonID, RobotType type) throws GameActionException {
         //TODO/
     }
 
@@ -197,8 +212,12 @@ public class FirstCommunication implements Communication {
         /*
          * Read from the start of the range until a spot is found (max 3 filled slots before, not checked).
          */
-        for (int i = INDEX_START_FRIENDLY_ARCHON; rc.readSharedArray(i) == 0; i++) {
-            rc.writeSharedArray(i, locationEncoder(loc, encodeID(RobotID)));
+        for (int i = INDEX_START_FRIENDLY_ARCHON; true; i++) { // looks really weird
+            if (rc.readSharedArray(i) == 0) {
+                rc.writeSharedArray(i, locationEncoder(loc, encodeID(RobotID)));
+                break;
+            }
+
         }
     }
 
@@ -242,7 +261,7 @@ public class FirstCommunication implements Communication {
         return input & 0b0000000000001111;
     }
 
-    private int encodeID(int RobotID){
+    private int encodeID(int RobotID) {
         return RobotID % 15 + 1; //TODO: better mapping than modulo, use a space in the array
     }
 }
