@@ -1,5 +1,6 @@
 package Trainwreck.util;
 
+import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
@@ -48,6 +49,7 @@ import battlecode.common.RobotType;
  * +────────────────────────────────────+────────────────────────────────────+────────────────────────────────────+────────────────────────────────────+
  */
 public class FirstCommunication implements Communication {
+    final int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
 
     /**
      * RobotController of the unit this object belongs to.
@@ -127,6 +129,16 @@ public class FirstCommunication implements Communication {
     @Override
     public void increaseUnitCounter(int ArchonID, RobotType type) {
 
+    }
+
+    @Override
+    public void addFriendlyArchon(int RobotID, MapLocation loc) throws GameActionException {
+        /*
+         * Read from the start of the range until a spot is found (max 3 filled slots before, not checked).
+         */
+        for (int i = INDEX_START_FRIENDLY_ARCHON; rc.readSharedArray(i) == 0; i++){
+//            rc.writeSharedArray();
+        }
     }
 
     @Override
