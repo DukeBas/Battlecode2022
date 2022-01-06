@@ -123,10 +123,9 @@ public interface Communication {
     /**
      * Gives the closest location that might have an enemy archon.
      *
-     * @param loc to consider the nearest archon to
      * @return location of closest suspected enemy archon, if there is one
      */
-    MapLocation getClosestPotentialEnemyArchonLocation(MapLocation loc) throws GameActionException;
+    MapLocation getClosestPotentialEnemyArchonLocation() throws GameActionException;
 
     /**
      * Encodes a location for use in the shared array.
@@ -158,4 +157,10 @@ public interface Communication {
      * @return extra information
      */
     int locationExtraDecoder(int input);
+
+    /**
+     * Gives the number of suspected enemy archon locations.
+     * @return number of suspected enemy archon location
+     */
+    int getNumberPotentialEnemyArchonLocations() throws GameActionException;
 }
