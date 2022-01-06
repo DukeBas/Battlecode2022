@@ -102,11 +102,8 @@ public interface Communication {
 
     /**
      * Add a friendly archon to the known list.
-     *
-     * @param RobotID of the archon
-     * @param loc     MapLocation of the archon
      */
-    void addFriendlyArchon(int RobotID, MapLocation loc) throws GameActionException;
+    void addFriendlyArchon() throws GameActionException;
 
     /**
      * Add a location of interest for a potential enemy archon location.
