@@ -100,17 +100,17 @@ public class FirstCommunication implements Communication {
 
     @Override
     public MapLocation[] getLocationsFriendlyArchons() throws GameActionException {
-        return getMapLocationsArchons(INDEX_START_FRIENDLY_ARCHON);
+        return getMapLocationsArchons(INDEX_START_FRIENDLY_ARCHON, NUMBER_MAX_ARCHONS);
     }
 
     @Override
     public MapLocation[] getLocationsEnemyArchons() throws GameActionException {
-        return getMapLocationsArchons(INDEX_START_ENEMY_ARCHON);
+        return getMapLocationsArchons(INDEX_START_ENEMY_ARCHON, NUMBER_MAX_ARCHONS);
     }
 
-    private MapLocation[] getMapLocationsArchons(int index_start_archons) throws GameActionException {
+    private MapLocation[] getMapLocationsArchons(int index_start_archons, int length) throws GameActionException {
         ArrayList<Integer> indices = new ArrayList<>();
-        for (int i = index_start_archons; i < i + NUMBER_MAX_ARCHONS; i++) {
+        for (int i = index_start_archons; i < i + length; i++) {
             if (rc.readSharedArray(i) != 0) {
                 indices.add(i);
             }
@@ -130,7 +130,7 @@ public class FirstCommunication implements Communication {
     }
 
     private MapLocation getClosestArchon(MapLocation loc, int index_start_archons) throws GameActionException {
-        MapLocation[] archonLocations = getMapLocationsArchons(index_start_archons);
+        MapLocation[] archonLocations = getMapLocationsArchons(index_start_archons, NUMBER_MAX_ARCHONS);
         MapLocation closestArchon = archonLocations[0];
         int closestDistance = loc.distanceSquaredTo(closestArchon);
         for (int i = 1; i < archonLocations.length; i++) {
@@ -285,8 +285,36 @@ public class FirstCommunication implements Communication {
     }
 
     @Override
-    public void addPotentialEnemyArchonLocation(MapLocation loc) {
-        //TODO
+    public void addPotentialEnemyArchonLocation(MapLocation loc) throws GameActionException {
+        rc.writeSharedArray(INDEX_START_POTENTIAL_ENEMY_ARRAY + getPotentialEnemyArchonCounter(),
+                locationEncoder(loc, 1));
+        increasePotentialEnemyArchonCounter();
+    }
+
+    @Override
+    public boolean getPotentialEnemyArchonLocationsLeft() throws GameActionException {
+        return getPotentialEnemyArchonCounter() > 0;
+    }
+
+    @Override
+    public MapLocation getClosestPotentialEnemyArchonLocation(MapLocation loc) throws GameActionException {
+        if (getPotentialEnemyArchonCounter() == 0) return null; // no potential enemy locations
+
+        MapLocation[] archonLocations = getMapLocationsArchons(INDEX_START_POTENTIAL_ENEMY_ARRAY,
+                getPotentialEnemyArchonCounter());
+
+        MapLocation closestPotentialArchon = archonLocations[0];
+
+        int closestDistance = loc.distanceSquaredTo(closestPotentialArchon);
+        for (int i = 1; i < archonLocations.length; ++i) { // ++i instead of i++ so IDE stops complaining ;)
+            int dist = loc.distanceSquaredTo(closestPotentialArchon);
+            if (dist < closestDistance) {
+                closestPotentialArchon = archonLocations[i];
+                closestDistance = dist;
+            }
+        }
+
+        return closestPotentialArchon;
     }
 
     private int getPotentialEnemyArchonCounter() throws GameActionException {

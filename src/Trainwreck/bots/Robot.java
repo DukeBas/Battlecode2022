@@ -1,5 +1,7 @@
 package Trainwreck.bots;
 
+import Trainwreck.util.Communication;
+import Trainwreck.util.FirstCommunication;
 import battlecode.common.*;
 
 import java.util.Random;
@@ -10,7 +12,7 @@ public abstract class Robot {
      * This is the RobotController singleton. You use it to perform actions from this robot,
      * and to get information on its current status.
      */
-    RobotController rc;
+    final RobotController rc;
 
     /**
      * We will use this variable to count the number of turns this robot has been alive.
@@ -28,6 +30,11 @@ public abstract class Robot {
     protected final int visionRadiusSquared;
 
     /**
+     * Interface to interact with the shared memory
+     */
+    final Communication comms;
+
+    /**
      * A random number generator.
      * We will use this RNG to make some random moves. The Random class is provided by the java.util.Random
      * import at the top of this file. Here, we *seed* the RNG with a constant number (6147); this makes sure
@@ -38,6 +45,11 @@ public abstract class Robot {
     public Robot(RobotController rc) {
         this.rc = rc;
         System.out.println("Hello world! I am a " + this.rc.getType());
+
+        /*
+         * Initialise communications object
+         */
+        comms = new FirstCommunication(rc);
 
         actionRadiusSquared = rc.getType().actionRadiusSquared; // Need to check how this works out for Lab
         visionRadiusSquared = rc.getType().visionRadiusSquared;
@@ -93,6 +105,7 @@ public abstract class Robot {
 
     /**
      * Run 1 round of this robot.
+     *
      * @throws GameActionException if an illegal game action is performed.
      */
     abstract void run() throws GameActionException;

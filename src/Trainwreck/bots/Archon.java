@@ -23,6 +23,9 @@ public class Archon extends Robot {
      */
     @Override
     void run() throws GameActionException {
+        // execture communication strategy
+        communicationStrategy();
+
         //Pick a direction to build in.
         Direction dir = Constants.directions[rng.nextInt(Constants.directions.length)];
         if (rng.nextBoolean()) {
@@ -38,5 +41,26 @@ public class Archon extends Robot {
                 rc.buildRobot(RobotType.SOLDIER, dir);
             }
         }
+    }
+
+    /**
+     * Communications strategy used by
+     */
+    private void communicationStrategy(){
+        // first round add own location to know friendly archons
+    }
+
+    /**
+     * First round add self to known friendly archons list.
+     */
+    private void commsFirstRound(){
+
+    }
+
+    /**
+     * Add possible enemy bases based on symmetries and other friendly bases.
+     */
+    private void commsSecondRound(){
+
     }
 }
