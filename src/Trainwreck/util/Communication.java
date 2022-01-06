@@ -117,20 +117,38 @@ public interface Communication {
     void addPotentialEnemyArchonLocation(MapLocation loc) throws GameActionException;
 
     /**
+     * Checks if there are still potential enemy archon locations.
+     *
+     * @return whether there are still suspected enemy archon locations.
+     */
+    boolean getPotentialEnemyArchonLocationsLeft() throws GameActionException;
+
+    /**
+     * Gives the closest location that might have an enemy archon.
+     *
+     * @param loc to consider the nearest archon to
+     * @return location of closest suspected enemy archon, if there is one
+     */
+    MapLocation getClosestPotentialEnemyArchonLocation(MapLocation loc) throws GameActionException;
+
+    /**
      * Encodes a location for use in the shared array.
+     *
      * @param loc MapLocation to encode.
      */
     int locationEncoder(MapLocation loc);
 
     /**
      * Encodes a location and extra data for use in the shared array.
-     * @param loc MapLocation to encode.
+     *
+     * @param loc   MapLocation to encode.
      * @param extra information to include.
      */
     int locationEncoder(MapLocation loc, int extra);
 
     /**
      * Turns a location from the shared array into a MapLocation object.
+     *
      * @param input from shared array to consider.
      * @return location.
      */
@@ -138,6 +156,7 @@ public interface Communication {
 
     /**
      * Extracts the extra information stored next to a location in the shared array.
+     *
      * @param input from shared array to consider.
      * @return extra information
      */
