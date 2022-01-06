@@ -1,10 +1,7 @@
 package Trainwreck.bots;
 
-import Trainwreck.util.Communication;
-import Trainwreck.util.FirstCommunication;
 import battlecode.common.*;
 
-import java.util.Objects;
 import java.util.Random;
 
 public abstract class Robot {
@@ -13,7 +10,7 @@ public abstract class Robot {
      * This is the RobotController singleton. You use it to perform actions from this robot,
      * and to get information on its current status.
      */
-    final RobotController rc;
+    RobotController rc;
 
     /**
      * We will use this variable to count the number of turns this robot has been alive.
@@ -31,21 +28,6 @@ public abstract class Robot {
     protected final int visionRadiusSquared;
 
     /**
-     * Interface to interact with the shared memory
-     */
-    final Communication comms;
-
-    /**
-     * Variable to hold a location as a target enemy archon.
-     */
-    MapLocation targetArchonLocation = null;
-
-    /**
-     * Variable to store ID of enemy team
-     */
-    final Team enemy;
-
-    /**
      * A random number generator.
      * We will use this RNG to make some random moves. The Random class is provided by the java.util.Random
      * import at the top of this file. Here, we *seed* the RNG with a constant number (6147); this makes sure
@@ -57,15 +39,8 @@ public abstract class Robot {
         this.rc = rc;
         System.out.println("Hello world! I am a " + this.rc.getType());
 
-        /*
-         * Initialise communications object
-         */
-        comms = new FirstCommunication(rc);
-
-        actionRadiusSquared = rc.getType().actionRadiusSquared; // Need to check how this works out for Lab as it has no action range
+        actionRadiusSquared = rc.getType().actionRadiusSquared; // Need to check how this works out for Lab
         visionRadiusSquared = rc.getType().visionRadiusSquared;
-
-        enemy = rc.getTeam().opponent();
     }
 
     /**
@@ -107,31 +82,6 @@ public abstract class Robot {
     }
 
     /**
-     * Method to hold communication actions.
-     */
-    void communicationStrategy() throws GameActionException {
-        rc.setIndicatorString("start comms turn " + turnCount);
-        comms.checkForEnemyArchons();
-
-        /*
-         * If we have a target location and can see it, then the archon was added before in comms.checkForEnemyArchons();
-         * So only clear location if in vision range
-         */
-        if (Objects.nonNull(targetArchonLocation) && rc.canSenseLocation(targetArchonLocation)){
-            // if location does not contain an enemy archon, invalidate it
-            RobotInfo robotAtLocation = rc.senseRobotAtLocation(targetArchonLocation);
-            if (Objects.nonNull(robotAtLocation) && robotAtLocation.team == enemy){
-                // actually found an enemy archon!
-            } else {
-                // nothing here! clear target location!
-                rc.setIndicatorString("NOTHING HERE, CLEARING");
-                comms.invalidateLocationEnemyArchon(targetArchonLocation);
-                targetArchonLocation = null;
-            }
-        }
-    }
-
-    /**
      * Run 1 round of this robot, including the actions beformed before and after by this super class.
      *
      * @throws GameActionException if an illegal game action is performed.
@@ -143,7 +93,6 @@ public abstract class Robot {
 
     /**
      * Run 1 round of this robot.
-     *
      * @throws GameActionException if an illegal game action is performed.
      */
     abstract void run() throws GameActionException;
