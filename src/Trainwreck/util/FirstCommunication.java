@@ -12,7 +12,9 @@ import java.util.ArrayList;
  * The following division of the shared memory is used
  * +────────────────────────────────────+────────────────────────────────────+────────────────────────────────────+────────────────────────────────────+
  * | Index 0                            | Index 1                            | Index 2                            | Index 3                            |
- * | Mapping?                           | Status booleans                    | .                                  | .                                  |
+ * | Mapping?                           | Status booleans first 8 bits,      | .                                  | .                                  |
+ * |                                    | last 8 bits for counting no.       |                                    |                                    |
+ * |                                    | potential enemy archon locations   |                                    |                                    |
  * |                                    |                                    |                                    |                                    |
  * | Index 4                            | Index 5                            | Index 6                            | Index 7                            |
  * | EnemyArchon1 ID+Loc                | EnemyArchon2 ID+Loc                | EnemyArchon3 ID+Loc                | EnemyArchon4 ID+Loc                |
@@ -57,6 +59,8 @@ public class FirstCommunication implements Communication {
     final int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
     final int INDEX_START_ENEMY_ARCHON = 4; // 4,5,6,7
     final int INDEX_START_COUNTERS = 12; // uses 2 per archon, so 12,13,14,15,16,17,18,19
+    final int INDEX_STATUS_BOOLS_ENEMY_COUNTER = 1;
+    final int INDEX_START_POTENTIAL_ENEMY_ARRAY = 20;
 
     final int NUMBER_MAX_ARCHONS = 4;
 
@@ -170,17 +174,38 @@ public class FirstCommunication implements Communication {
         for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
             if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(RobotID)) {
                 rc.writeSharedArray(i, encodeID(RobotID));
-                break;
+                return;
             }
         }
     }
 
     @Override
     public void invalidateLocationEnemyArchon(MapLocation loc) throws GameActionException {
+        // check enemy archon locations
         for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
             if (loc.equals(locationDecoder(rc.readSharedArray(i)))) {
                 rc.writeSharedArray(i, locationExtraDecoder(rc.readSharedArray(i)));
-                break;
+                return;
+            }
+        }
+
+        /*
+         * check list of potential enemy archon locations, if not found before.
+         * If it is found, remove it from potential list, and if there are more move last item to the gap in the array.
+         */
+        int potentialEnemyCounter = getPotentialEnemyArchonCounter();
+        for (int i = INDEX_START_POTENTIAL_ENEMY_ARRAY; i < potentialEnemyCounter; i++) {
+            if (loc.equals(locationDecoder(rc.readSharedArray(i)))) {
+                decreasePotentialEnemyArchonCounter();
+                potentialEnemyCounter--;
+                if (i < potentialEnemyCounter) { // check if we created a gap in array
+                    // we created a gap, move the last one to the gap to have a filled array part
+                    int indexLast = INDEX_START_POTENTIAL_ENEMY_ARRAY + potentialEnemyCounter + 1;
+                    int valueToMove = rc.readSharedArray(indexLast);
+                    rc.writeSharedArray(indexLast, 0); // clear it
+                    rc.writeSharedArray(i, valueToMove); // move the value to the created gap to fill it
+                    return;
+                }
             }
         }
     }
@@ -205,7 +230,6 @@ public class FirstCommunication implements Communication {
 
     @Override
     public void increaseUnitCounter(int ArchonID, RobotType type) throws GameActionException {
-        //TODO/
         /*
          * Find index in shared array of archon with request ID
          */
@@ -263,6 +287,20 @@ public class FirstCommunication implements Communication {
     @Override
     public void addPotentialEnemyArchonLocation(MapLocation loc) {
         //TODO
+    }
+
+    private int getPotentialEnemyArchonCounter() throws GameActionException {
+        return rc.readSharedArray(INDEX_STATUS_BOOLS_ENEMY_COUNTER);
+    }
+
+    private void increasePotentialEnemyArchonCounter() throws GameActionException {
+        rc.writeSharedArray(INDEX_STATUS_BOOLS_ENEMY_COUNTER,
+                getPotentialEnemyArchonCounter() + 1);
+    }
+
+    private void decreasePotentialEnemyArchonCounter() throws GameActionException {
+        rc.writeSharedArray(INDEX_STATUS_BOOLS_ENEMY_COUNTER,
+                getPotentialEnemyArchonCounter() - 1);
     }
 
     @Override
