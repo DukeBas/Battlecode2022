@@ -57,21 +57,20 @@ public class Archon extends Robot {
      */
     private void commsFirstRound() throws GameActionException {
         comms.addFriendlyArchon();
-//        rc.setIndicatorString("I am at " + rc.getLocation().toString());
     }
 
     /**
      * Add possible enemy bases based on symmetries and other friendly bases.
      */
     private void commsSecondRound() throws GameActionException {
-        MapLocation[] friendlyArchons = comms.getLocationsFriendlyArchons();
-
-        StringBuilder out = new StringBuilder();
-
-        for (MapLocation loc : friendlyArchons) {
-            out.append(loc.toString()).append(" ");
-        }
-
-        rc.setIndicatorString(out.toString());
+        rc.setIndicatorString("start second");
+        comms.addPotentialEnemyArchonLocation(new MapLocation(
+                (int) Math.round(Math.random() * 10),
+                (int) Math.round(Math.random() * 10)
+        ));
+        comms.addPotentialEnemyArchonLocation(new MapLocation(1, 1));
+        comms.addPotentialEnemyArchonLocation(new MapLocation(1, 1));
+        MapLocation close = comms.getClosestPotentialEnemyArchonLocation();
+        rc.setIndicatorString(close.toString() + " and there were " + comms.getNumberPotentialEnemyArchonLocations());
     }
 }
