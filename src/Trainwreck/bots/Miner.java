@@ -32,6 +32,7 @@ public class Miner extends Robot {
 
         List<LocationWithResources> ResourceLocations = new ArrayList<>();
         List<LocationWithResources> MineableLocations = new ArrayList<>();
+
         /*
          * Fills list with locations with resources first with locations with gold,
          * then with tiles with lead if there are no locations with gold.
@@ -77,10 +78,18 @@ public class Miner extends Robot {
             }
         }
         /*
-         * sort the found locations with resources and go to the best, prioritising gold over lead.
+         * Sort the found locations with resources and go to the best, prioritising gold over lead.
+         * Note: does not actually sort if there are more than 8 items in queue, since then none are in range
+         * (see above), so only the best actually matters, so we remove everything else.
+         *
          */
-        //TODO NOTE: more efficient to only get the max
-        Collections.sort(ResourceLocations);
+        if (ResourceLocations.size() <= 8) {
+            Collections.sort(ResourceLocations);
+        } else {
+            LocationWithResources best = Collections.max(ResourceLocations);
+            ResourceLocations = new ArrayList<>();
+            ResourceLocations.add(best);
+        }
 
         /*
          * Mine highest valued tiles around us first. Mining gold first.
@@ -112,17 +121,17 @@ public class Miner extends Robot {
          * If there is a gold resource in sight, travel towards it. Otherwise, go to the largest lead deposit nearby.
          * Since array is sorted, if the first place does not contain gold, none will. If the first place does
          * contain gold, then it automatically also contains the most amount available nearby.
-         * Do not go to lead deposits with only 1 left.
+         * Do not go to lead deposits with only 1 left. (see earlier comment for what locations we consider.)
          */
-        Pathfinding pathfinder = new DirectionBasedPathfinding();
-        Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
         Direction dir;
         if (ResourceLocations.size() > 0) { // there are targets
             LocationWithResources target = ResourceLocations.get(0);
             if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
                 // move randomly
+                Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
                 dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
             } else { // find direction to target
+                Pathfinding pathfinder = new DirectionBasedPathfinding();
                 dir = pathfinder.getDirection(myLocation, target.loc, rc);
                 if (myLocation.equals(target.loc)) { // Stand still if at target
                     dir = Direction.CENTER;
@@ -130,6 +139,7 @@ public class Miner extends Robot {
             }
         } else {
             // move randomly
+            Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
             dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
         }
 
