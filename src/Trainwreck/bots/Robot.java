@@ -3,6 +3,7 @@ package Trainwreck.bots;
 import Trainwreck.util.Communication;
 import Trainwreck.util.FirstCommunication;
 import battlecode.common.*;
+import Trainwreck.util.Constants;
 
 import java.util.Objects;
 import java.util.Random;
@@ -87,12 +88,14 @@ public abstract class Robot {
                 // handle GameActionExceptions judiciously, in case unexpected events occur in the game
                 // world. Remember, uncaught exceptions cause your robot to explode!
                 System.out.println(rc.getType() + " GameAction-Exception");
+                this.rc.setIndicatorString(e.getClass().toString() + ": " + e.getMessage());
                 e.printStackTrace();
 
             } catch (Exception e) {
                 // Oh no! It looks like our code tried to do something bad. This isn't a
                 // GameActionException, so it's more likely to be a bug in our code.
                 System.out.println(rc.getType() + " Generic-Exception");
+                this.rc.setIndicatorString(e.getClass().toString() + ": " + e.getMessage());
                 e.printStackTrace();
 
             } finally {
@@ -147,4 +150,25 @@ public abstract class Robot {
      * @throws GameActionException if an illegal game action is performed.
      */
     abstract void run() throws GameActionException;
+
+    /**
+     * Tries to build a specific robot type in any direction.
+     */
+    protected final boolean attemptBuild(RobotType robotType, int odds) throws GameActionException {
+        // don't take all the resources yourself, but give other
+        // archons/builders a chance to build; there's at most 4 archons, so
+        // this is *slightly* more fair than first-come-first-serve
+        if (Robot.rng.nextInt() % odds != 0) {
+            return false;
+        }
+
+        for (Direction direction : Constants.cardinalDirections) {
+            if (this.rc.canBuildRobot(robotType, direction)) {
+                this.rc.buildRobot(robotType, direction);
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

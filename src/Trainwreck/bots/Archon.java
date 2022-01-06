@@ -1,9 +1,6 @@
 package Trainwreck.bots;
 
-import Trainwreck.util.Constants;
 import battlecode.common.*;
-
-import java.util.Objects;
 
 public class Archon extends Robot {
     /**
@@ -53,48 +50,20 @@ public class Archon extends Robot {
         // execute communication strategy
         communicationStrategy();
 
-        //Pick a direction to build in.
-        Direction dir = Constants.directions[rng.nextInt(Constants.directions.length)];
-        if (rng.nextBoolean()) {
-            // Let's try to build a miner.
-//            rc.setIndicatorString("Trying to build a miner");
-            if (rc.canBuildRobot(RobotType.MINER, dir)) {
-                rc.buildRobot(RobotType.MINER, dir);
-            }
-        } else {
-            // Let's try to build a soldier.
-//            rc.setIndicatorString("Trying to build a soldier");
-            if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
-                rc.buildRobot(RobotType.SOLDIER, dir);
+        // repairs anything it can find
+        RobotInfo[] robots = this.rc.senseNearbyRobots();
+        for (RobotInfo robot : robots) {
+            MapLocation location = robot.getLocation();
+            if (this.rc.canRepair(location)) {
+                this.rc.repair(location);
             }
         }
-        
+
         // just reiterate over the build selection repeatedly
         int index = this.buildSelector % buildSelection.length;
-        if (this.attemptBuild(buildSelection[index])) {
+        if (this.attemptBuild(buildSelection[index], 20)) {
             this.buildSelector++;
         }
-    }
-
-    /**
-     * Tries to build a specific robot type in any direction.
-     */
-    private boolean attemptBuild(RobotType type) throws GameActionException {
-        // don't take all the resources yourself, but give other
-        // archons/builders a chance to build; there's at most 4 archons, so
-        // this is *slightly* more fair than first-come-first-serve
-        if (Robot.rng.nextInt() % 4 != 0) {
-            return false;
-        }
-
-        for (Direction direction : Constants.cardinalDirections) {
-            if (this.rc.canBuildRobot(type, direction)) {
-                this.rc.buildRobot(type, direction);
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -189,8 +158,7 @@ public class Archon extends Robot {
          * Check if location is covered by a friendly archon already.
          */
         MapLocation[] friendlyArchons = comms.getLocationsFriendlyArchons();
-        for (
-                MapLocation loc : friendlyArchons) { // check all known friendly archons
+        for (MapLocation loc : friendlyArchons) { // check all known friendly archons
             if (target.equals(loc)) {
                 // We found a friendly archon on that position! Disproven!
                 return;
