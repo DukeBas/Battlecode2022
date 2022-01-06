@@ -87,6 +87,13 @@ public interface Communication {
     void increaseUnitCounter(int ArchonID, RobotType type);
 
     /**
+     * Add a friendly archon to the known list.
+     * @param RobotID of the archon
+     * @param loc MapLocation of the archon
+     */
+    void addLocationFriendlyArchon(int RobotID, MapLocation loc);
+
+    /**
      * Add a location of interest for a potential enemy archon location.
      * Most likely used at the start of the match with map symmetry.
      * @param loc MapLocation of location of interest.
