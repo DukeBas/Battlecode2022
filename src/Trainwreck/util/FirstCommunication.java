@@ -24,7 +24,7 @@ import java.util.ArrayList;
  * | Archon1 Counter (Miner+Sage)       | Archon2 Counter (Miner+Sage)       | Archon3  Counter (Miner+Sage)      | Archon4 Counter (Miner+Sage)       |
  * |                                    |                                    |                                    |                                    |
  * | Index 16                           | Index 17                           | Index 18                           | Index 19                           |
- * | Archon1 Counter (Soldier+Builder)  | Archon1 Counter (Soldier+Builder)  | Archon1 Counter (Soldier+Builder)  | Archon1 Counter (Soldier+Builder)  |
+ * | Archon1 Counter (Soldier+Builder)  | Archon2 Counter (Soldier+Builder)  | Archon3 Counter (Soldier+Builder)  | Archon4 Counter (Soldier+Builder)  |
  * |                                    |                                    |                                    |                                    |
  * | 20                                 | 21                                 | 22                                 | 23                                 |
  * | ;                                  | ;                                  |                                    |                                    |
@@ -55,7 +55,8 @@ import java.util.ArrayList;
  */
 public class FirstCommunication implements Communication {
     final int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
-    final int INDEX_START_ENEMY_ARCHON = 4; // 8,9,10,11
+    final int INDEX_START_ENEMY_ARCHON = 4; // 4,5,6,7
+    final int INDEX_START_COUNTERS = 12; // uses 2 per archon, so 12,13,14,15,16,17,18,19
 
     final int NUMBER_MAX_ARCHONS = 4;
 
@@ -205,6 +206,44 @@ public class FirstCommunication implements Communication {
     @Override
     public void increaseUnitCounter(int ArchonID, RobotType type) throws GameActionException {
         //TODO/
+        /*
+         * Find index in shared array of archon with request ID
+         */
+        int archonIndex = INDEX_START_FRIENDLY_ARCHON;
+        for (int i = INDEX_START_FRIENDLY_ARCHON; i < INDEX_START_FRIENDLY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
+            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(ArchonID)) {
+                archonIndex = i;
+            }
+        }
+
+        /*
+         * Pre-calculate the appropriate indices to use.
+         */
+        int indexFirstSlot = INDEX_START_COUNTERS + 2 * (archonIndex - INDEX_START_FRIENDLY_ARCHON);
+        int indexSecondSlot = indexFirstSlot + 1;
+
+        /*
+         * Add counter, depending on type of unit
+         */
+        int previous;
+        switch (type) {
+            case MINER:
+                previous = rc.readSharedArray(indexFirstSlot);
+                rc.writeSharedArray(indexFirstSlot, previous + 1);
+                break;
+            case SAGE:
+                previous = rc.readSharedArray(indexFirstSlot);
+                rc.writeSharedArray(indexFirstSlot, previous + 1024); // use left 8 bits
+                break;
+            case SOLDIER:
+                previous = rc.readSharedArray(indexSecondSlot);
+                rc.writeSharedArray(indexSecondSlot, previous + 1);
+                break;
+            case BUILDER:
+                previous = rc.readSharedArray(indexSecondSlot);
+                rc.writeSharedArray(indexSecondSlot, previous + 1024); // use left 8 bits
+                break;
+        }
     }
 
     @Override
