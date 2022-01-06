@@ -5,6 +5,8 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
+import java.util.ArrayList;
+
 
 /**
  * The following division of the shared memory is used
@@ -53,6 +55,9 @@ import battlecode.common.RobotType;
  */
 public class FirstCommunication implements Communication {
     final int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
+    final int INDEX_START_ENEMY_ARCHON = 4; // 8,9,10,11
+
+    final int NUMBER_MAX_ARCHONS = 4;
 
     /**
      * RobotController of the unit this object belongs to.
@@ -67,6 +72,7 @@ public class FirstCommunication implements Communication {
     final int mapHeight;
 
 
+    // DO NOT USE: FOR TESTING ONLY
     public FirstCommunication(RobotController rc) {
         this.rc = rc;
 
@@ -74,7 +80,7 @@ public class FirstCommunication implements Communication {
         this.mapHeight = rc.getMapHeight();
     }
 
-    public FirstCommunication(){
+    public FirstCommunication() {
         mapHeight = 1;
         mapWidth = 1;
         rc = null;
@@ -86,58 +92,104 @@ public class FirstCommunication implements Communication {
     }
 
     @Override
-    public MapLocation[] getLocationsFriendlyArchons() {
-        return new MapLocation[0];
+    public MapLocation[] getLocationsFriendlyArchons() throws GameActionException {
+        return getMapLocationsArchons(INDEX_START_FRIENDLY_ARCHON);
     }
 
     @Override
-    public MapLocation[] getLocationsEnemyArchons() {
-        return new MapLocation[0];
+    public MapLocation[] getLocationsEnemyArchons() throws GameActionException {
+        return getMapLocationsArchons(INDEX_START_ENEMY_ARCHON);
+    }
+
+    private MapLocation[] getMapLocationsArchons(int index_start_archons) throws GameActionException {
+        ArrayList<Integer> indices = new ArrayList<>();
+        for (int i = index_start_archons; i < i + NUMBER_MAX_ARCHONS; i++) {
+            if (rc.readSharedArray(i) != 0) {
+                indices.add(i);
+            }
+        }
+
+        MapLocation[] output = new MapLocation[indices.size()];
+        for (int i = 0; i < indices.size(); i++) {
+            output[i] = locationDecoder(indices.get(i));
+        }
+
+        return output;
     }
 
     @Override
-    public MapLocation getLocationsClosestFriendlyArchon() {
+    public MapLocation getLocationsClosestFriendlyArchon(MapLocation loc) throws GameActionException {
+        return getClosestArchon(loc, INDEX_START_FRIENDLY_ARCHON);
+    }
+
+    private MapLocation getClosestArchon(MapLocation loc, int index_start_archons) throws GameActionException {
+        MapLocation[] archonLocations = getMapLocationsArchons(index_start_archons);
+        MapLocation closestArchon = archonLocations[0];
+        int closestDistance = loc.distanceSquaredTo(closestArchon);
+        for (int i = 1; i < archonLocations.length; i++) {
+            int dist = loc.distanceSquaredTo(closestArchon);
+            if (dist < closestDistance) {
+                closestArchon = archonLocations[i];
+                closestDistance = dist;
+            }
+        }
+
+        return closestArchon;
+    }
+
+    @Override
+    public MapLocation getLocationsClosestEnemyArchon(MapLocation loc) throws GameActionException {
+        return getClosestArchon(loc, INDEX_START_ENEMY_ARCHON);
+    }
+
+
+    private MapLocation getLocationArchonWithIDAtIndex(int index_start_archons, int RobotID) throws GameActionException {
+        for (int i = index_start_archons; i < index_start_archons + 4; i++) {
+            if (locationExtraDecoder(rc.readSharedArray(i)) == RobotID % 15 + 1){//TODO other mapping tech
+                return locationDecoder(rc.readSharedArray(i));
+            }
+        }
         return null;
     }
 
     @Override
-    public MapLocation getLocationsClosestEnemyArchon() {
-        return null;
+    public MapLocation getLocationFriendlyArchonWithID(int RobotID) throws GameActionException {
+        return getLocationArchonWithIDAtIndex(INDEX_START_FRIENDLY_ARCHON, RobotID);
     }
 
     @Override
-    public MapLocation getLocationFriendlyArchonWithID(int RobotID) {
-        return null;
+    public MapLocation getLocationEnemyArchonWithID(int RobotID) throws GameActionException {
+        return getLocationArchonWithIDAtIndex(INDEX_START_ENEMY_ARCHON, RobotID);
     }
 
     @Override
-    public MapLocation getLocationEnemyArchonWithID(int RobotID) {
-        return null;
-    }
-
-    @Override
-    public void invalidateLocationEnemyArchon(int RobotID) {
-
+    public void invalidateLocationEnemyArchon(int RobotID) throws GameActionException {
+        for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + 4; i++) {
+            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(RobotID)){
+                rc.writeSharedArray(i, encodeID(RobotID));
+                break;
+            }
+        }
     }
 
     @Override
     public void invalidateLocationEnemyArchon(MapLocation loc) {
-
+        //TODO
     }
 
     @Override
     public void updateLocationFriendlyArchon(int RobotID, MapLocation loc) {
-
+        //TODO
     }
 
     @Override
     public void updateLocationEnemyArchon(int RobotID, MapLocation loc) {
-
+        //TODO
     }
 
     @Override
     public void increaseUnitCounter(int ArchonID, RobotType type) {
-
+        //TODO/
     }
 
     @Override
@@ -146,13 +198,13 @@ public class FirstCommunication implements Communication {
          * Read from the start of the range until a spot is found (max 3 filled slots before, not checked).
          */
         for (int i = INDEX_START_FRIENDLY_ARCHON; rc.readSharedArray(i) == 0; i++) {
-//            rc.writeSharedArray();
+            rc.writeSharedArray(i, locationEncoder(loc, encodeID(RobotID)));
         }
     }
 
     @Override
     public void addPotentialEnemyArchonLocation(MapLocation loc) {
-
+        //TODO
     }
 
     @Override
@@ -168,7 +220,6 @@ public class FirstCommunication implements Communication {
      */
     @Override
     public int locationEncoder(MapLocation loc, int extra) {
-
         // Encode extra information
         int output = extra;
 
@@ -183,11 +234,15 @@ public class FirstCommunication implements Communication {
 
     @Override
     public MapLocation locationDecoder(int input) {
-        return new MapLocation((input & 0b1111110000000000)/1024, (input & 0b0000001111110000)/16);
+        return new MapLocation((input & 0b1111110000000000) / 1024, (input & 0b0000001111110000) / 16);
     }
 
     @Override
     public int locationExtraDecoder(int input) {
         return input & 0b0000000000001111;
+    }
+
+    private int encodeID(int RobotID){
+        return RobotID % 15 + 1; //TODO: better mapping than modulo, use a space in the array
     }
 }

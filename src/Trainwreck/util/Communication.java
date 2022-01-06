@@ -30,16 +30,18 @@ public interface Communication {
     /**
      * Gets the locations of the closest friendly archon.
      *
+     * @param loc location to consider archons nearest to.
      * @return location of nearest friendly archon
      */
-    MapLocation getLocationsClosestFriendlyArchon() throws GameActionException;
+    MapLocation getLocationsClosestFriendlyArchon(MapLocation loc) throws GameActionException;
 
     /**
      * Gets the locations of the closest enemy archon.
      *
+     * @param loc location to consider archons nearest to.
      * @return location of nearest enemy archon
      */
-    MapLocation getLocationsClosestEnemyArchon() throws GameActionException;
+    MapLocation getLocationsClosestEnemyArchon(MapLocation loc) throws GameActionException;
 
     /**
      * Gives location of friendly archon with a specified robot ID.
