@@ -118,7 +118,7 @@ public class FirstCommunication implements Communication {
 
         MapLocation[] output = new MapLocation[indices.size()];
         for (int i = 0; i < indices.size(); i++) {
-            output[i] = locationDecoder(indices.get(i));
+            output[i] = locationDecoder(rc.readSharedArray(indices.get(i)));
         }
 
         return output;
@@ -271,16 +271,15 @@ public class FirstCommunication implements Communication {
     }
 
     @Override
-    public void addFriendlyArchon(int RobotID, MapLocation loc) throws GameActionException {
+    public void addFriendlyArchon() throws GameActionException {
         /*
          * Read from the start of the range until a spot is found (max 3 filled slots before, not checked).
          */
         for (int i = INDEX_START_FRIENDLY_ARCHON; true; i++) { // looks really weird
             if (rc.readSharedArray(i) == 0) {
-                rc.writeSharedArray(i, locationEncoder(loc, encodeID(RobotID)));
-                break;
+                rc.writeSharedArray(i, locationEncoder(rc.getLocation(), encodeID(rc.getID())));
+               break;
             }
-
         }
     }
 
