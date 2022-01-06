@@ -23,28 +23,34 @@ public strictfp class RobotPlayer {
     @SuppressWarnings("unused")
     public static void run(RobotController rc) throws GameActionException {
         // Depending on the type of the bot, create a robot of that type
+        final Robot robot;
         switch (rc.getType()) {
             case ARCHON:
-                new Archon(rc);
+                robot = new Archon(rc);
                 break;
             case BUILDER:
-                new Builder(rc);
+                robot = new Builder(rc);
                 break;
             case LABORATORY:
-                new Laboratory(rc);
+                robot = new Laboratory(rc);
                 break;
             case MINER:
-                new Miner(rc);
+                robot = new Miner(rc);
                 break;
             case SAGE:
-                new Sage(rc);
+                robot = new Sage(rc);
                 break;
             case SOLDIER:
-                new Soldier(rc);
+                robot = new Soldier(rc);
                 break;
             case WATCHTOWER:
-                new Watchtower(rc);
+                robot = new Watchtower(rc);
+                break;
+            default:
+                robot = null;
                 break;
         }
+
+        robot.runGameLoop();
     }
 }
