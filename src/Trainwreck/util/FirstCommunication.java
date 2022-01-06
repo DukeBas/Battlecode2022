@@ -47,6 +47,9 @@ import battlecode.common.RobotType;
  * | 60                                 | 61                                 | 62                                 | 63                                 |
  * | ;                                  | ;                                  | ;                                  |                                    |
  * +────────────────────────────────────+────────────────────────────────────+────────────────────────────────────+────────────────────────────────────+
+ * <p>
+ * <p>
+ * We use the first 6 bits for x, next 6 for y, and last 4 for extra information for encoding locations.
  */
 public class FirstCommunication implements Communication {
     final int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
@@ -69,6 +72,12 @@ public class FirstCommunication implements Communication {
 
         this.mapWidth = rc.getMapWidth();
         this.mapHeight = rc.getMapHeight();
+    }
+
+    public FirstCommunication(){
+        mapHeight = 1;
+        mapWidth = 1;
+        rc = null;
     }
 
     @Override
@@ -136,7 +145,7 @@ public class FirstCommunication implements Communication {
         /*
          * Read from the start of the range until a spot is found (max 3 filled slots before, not checked).
          */
-        for (int i = INDEX_START_FRIENDLY_ARCHON; rc.readSharedArray(i) == 0; i++){
+        for (int i = INDEX_START_FRIENDLY_ARCHON; rc.readSharedArray(i) == 0; i++) {
 //            rc.writeSharedArray();
         }
     }
@@ -144,5 +153,41 @@ public class FirstCommunication implements Communication {
     @Override
     public void addPotentialEnemyArchonLocation(MapLocation loc) {
 
+    }
+
+    @Override
+    public int locationEncoder(MapLocation loc) {
+        return locationEncoder(loc, 0);
+    }
+
+    /**
+     * Encodes a location.
+     *
+     * @param loc   MapLocation to encode.
+     * @param extra information to include, between 0 and 15 (inclusive).
+     */
+    @Override
+    public int locationEncoder(MapLocation loc, int extra) {
+
+        // Encode extra information
+        int output = extra;
+
+        // Encode x of location
+        output += 1024 * loc.x;
+
+        // Encode y of location
+        output += 16 * loc.y;
+
+        return output;
+    }
+
+    @Override
+    public MapLocation locationDecoder(int input) {
+        return new MapLocation((input & 0b1111110000000000)/1024, (input & 0b0000001111110000)/16);
+    }
+
+    @Override
+    public int locationExtraDecoder(int input) {
+        return input & 0b0000000000001111;
     }
 }
