@@ -117,14 +117,14 @@ public interface Communication {
      * Encodes a location for use in the shared array.
      * @param loc MapLocation to encode.
      */
-    void locationEncoder(MapLocation loc);
+    int locationEncoder(MapLocation loc);
 
     /**
      * Encodes a location and extra data for use in the shared array.
      * @param loc MapLocation to encode.
      * @param extra information to include.
      */
-    void locationEncoder(MapLocation loc, int extra);
+    int locationEncoder(MapLocation loc, int extra);
 
     /**
      * Turns a location from the shared array into a MapLocation object.
