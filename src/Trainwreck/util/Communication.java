@@ -112,4 +112,31 @@ public interface Communication {
      * @param loc MapLocation of location of interest.
      */
     void addPotentialEnemyArchonLocation(MapLocation loc) throws GameActionException;
+
+    /**
+     * Encodes a location for use in the shared array.
+     * @param loc MapLocation to encode.
+     */
+    void locationEncoder(MapLocation loc);
+
+    /**
+     * Encodes a location and extra data for use in the shared array.
+     * @param loc MapLocation to encode.
+     * @param extra information to include.
+     */
+    void locationEncoder(MapLocation loc, int extra);
+
+    /**
+     * Turns a location from the shared array into a MapLocation object.
+     * @param input from shared array to consider.
+     * @return location.
+     */
+    MapLocation locationDecoder(int input);
+
+    /**
+     * Extracts the extra information stored next to a location in the shared array.
+     * @param input from shared array to consider.
+     * @return extra information
+     */
+    int locationExtraDecoder(int input);
 }
