@@ -125,7 +125,7 @@ public class FirstCommunication implements Communication {
     }
 
     @Override
-    public MapLocation getLocationsClosestFriendlyArchon(MapLocation loc) throws GameActionException {
+    public MapLocation getLocationsClosestFriendlyArchon() throws GameActionException {
         return getClosestArchon(INDEX_START_FRIENDLY_ARCHON);
     }
 
@@ -147,7 +147,7 @@ public class FirstCommunication implements Communication {
     }
 
     @Override
-    public MapLocation getLocationsClosestEnemyArchon(MapLocation loc) throws GameActionException {
+    public MapLocation getLocationClosestEnemyArchon() throws GameActionException {
         return getClosestArchon(INDEX_START_ENEMY_ARCHON);
     }
 
@@ -179,6 +179,7 @@ public class FirstCommunication implements Communication {
                 return;
             }
         }
+
     }
 
     @Override
@@ -186,15 +187,20 @@ public class FirstCommunication implements Communication {
         // check enemy archon locations
         for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
             if (loc.equals(locationDecoder(rc.readSharedArray(i)))) {
-                rc.writeSharedArray(i, locationExtraDecoder(rc.readSharedArray(i)));
+                rc.writeSharedArray(i, locationEncoder(new MapLocation(61, 61),
+                        locationExtraDecoder(rc.readSharedArray(i)))); // write invalid location and ID
                 return;
             }
         }
 
-        /*
-         * check list of potential enemy archon locations, if not found before.
-         * If it is found, remove it from potential list, and if there are more move last item to the gap in the array.
-         */
+        removePotentialEnemyArchonIfFound(loc);
+    }
+
+    /**
+     * check list of potential enemy archon locations, if not found before.
+     * If it is found, remove it from potential list, and if there are more move last item to the gap in the array.
+     */
+    private void removePotentialEnemyArchonIfFound(MapLocation loc) throws GameActionException {
         int potentialEnemyCounter = getPotentialEnemyArchonCounter();
         for (int i = INDEX_START_POTENTIAL_ENEMY_ARRAY; i < INDEX_START_POTENTIAL_ENEMY_ARRAY + potentialEnemyCounter;
              i++) {
@@ -219,19 +225,19 @@ public class FirstCommunication implements Communication {
     public void updateLocationFriendlyArchon(int RobotID, MapLocation loc) throws GameActionException {
         for (int i = INDEX_START_FRIENDLY_ARCHON; i < INDEX_START_FRIENDLY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
             if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(RobotID)) {
-                rc.writeSharedArray(i, locationEncoder(loc, RobotID));
+                rc.writeSharedArray(i, locationEncoder(loc, encodeID(RobotID)));
             }
         }
     }
 
-    @Override
-    public void updateLocationEnemyArchon(int RobotID, MapLocation loc) throws GameActionException {
-        for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
-            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(RobotID)) {
-                rc.writeSharedArray(i, locationEncoder(loc, RobotID));
-            }
-        }
-    }
+//    @Override
+//    public void updateLocationEnemyArchon(int RobotID, MapLocation loc) throws GameActionException {
+//        for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
+//            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(RobotID)) {
+//                rc.writeSharedArray(i, locationEncoder(loc, encodeID(RobotID)));
+//            }
+//        }
+//    }
 
     @Override
     public int getNumberPotentialEnemyArchonLocations() throws GameActionException {
@@ -285,12 +291,46 @@ public class FirstCommunication implements Communication {
         /*
          * Read from the start of the range until a spot is found (max 3 filled slots before, not checked).
          */
-        for (int i = INDEX_START_FRIENDLY_ARCHON; true; i++) { // looks really weird
+        for (int i = INDEX_START_FRIENDLY_ARCHON; i < INDEX_START_FRIENDLY_ARCHON + NUMBER_MAX_ARCHONS; i++) { // looks really weird
             if (rc.readSharedArray(i) == 0) {
                 rc.writeSharedArray(i, locationEncoder(rc.getLocation(), encodeID(rc.getID())));
                 break;
             }
         }
+    }
+
+    @Override
+    public void addEnemyArchon(MapLocation loc, int RobotID) throws GameActionException {
+        /*
+         * Check if it is already known
+         */
+        for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
+            int val = rc.readSharedArray(i);
+            int extraInfo = locationExtraDecoder(val);
+
+            // check if we know the ID already
+            if (encodeID(RobotID) == extraInfo) {
+                // we've seen it before! Update position if it has moved
+                if (!loc.equals(locationDecoder(val))) {
+                    rc.writeSharedArray(i, locationEncoder(loc, encodeID(RobotID)));
+                }
+                break;
+            } else {
+                // it has a new ID! Find an empty spot in the list and add it
+                for (int j = INDEX_START_ENEMY_ARCHON; j < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; j++) { // looks really weird
+                    if (rc.readSharedArray(j) == 0) { // check if spot is empty
+                        rc.writeSharedArray(j, locationEncoder(loc, encodeID(RobotID)));
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        /*
+         * Check if it was in the suspected list, and remove it if it is
+         */
+        removePotentialEnemyArchonIfFound(loc);
     }
 
     private MapLocation[] getLocationsPotentialEnemyArchons() throws GameActionException {
@@ -346,7 +386,7 @@ public class FirstCommunication implements Communication {
     }
 
     private int getPotentialEnemyArchonCounter() throws GameActionException {
-        return rc.readSharedArray(INDEX_STATUS_BOOLS_ENEMY_COUNTER);
+        return rc.readSharedArray(INDEX_STATUS_BOOLS_ENEMY_COUNTER) & 0b0000000011111111;
     }
 
     private void increasePotentialEnemyArchonCounter() throws GameActionException {
