@@ -1,9 +1,6 @@
 package Trainwreck.bots;
 
-import Trainwreck.util.Constants;
-import Trainwreck.util.DirectionBasedPathfinding;
-import Trainwreck.util.Pathfinding;
-import Trainwreck.util.RandomPreferLessRubblePathfinding;
+import Trainwreck.util.*;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
@@ -136,7 +133,7 @@ public class Miner extends Robot {
                 Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
                 dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
             } else { // find direction to target
-                Pathfinding pathfinder = new DirectionBasedPathfinding();
+                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
                 dir = pathfinder.getDirection(myLocation, target.loc, rc);
                 if (myLocation.equals(target.loc)) { // Stand still if at target
                     dir = Direction.CENTER;
@@ -150,7 +147,7 @@ public class Miner extends Robot {
 
         // try to move toward target, if not already there
 //        rc.setIndicatorString("canMove(" + dir + ") = " + rc.canMove(dir));
-        if (rc.canMove(dir)) { // do not move if already at target
+        if (!dir.equals(Direction.CENTER) && rc.canMove(dir)) { // do not move if already at target
             rc.move(dir);
         }
     }
