@@ -54,7 +54,7 @@ public class Archon extends Robot {
         RobotInfo[] robots = this.rc.senseNearbyRobots();
         for (RobotInfo robot : robots) {
             MapLocation location = robot.getLocation();
-            if (this.rc.canRepair(location)) {
+            if (this.rc.canRepair(location) && robot.health < robot.type.health) {
                 this.rc.repair(location);
             }
         }
