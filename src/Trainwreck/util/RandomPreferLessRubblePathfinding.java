@@ -39,7 +39,7 @@ public class RandomPreferLessRubblePathfinding implements Pathfinding {
             System.out.println("RandomPreferLessRubblePathfinding: checked location not in vision! " + e);
         }
 
-        return PickRandomWeightedDirection(options, totalWeight);
+        return pickRandomWeightedDirection(options, totalWeight);
     }
 
     /**
@@ -49,7 +49,7 @@ public class RandomPreferLessRubblePathfinding implements Pathfinding {
      * @param totalWeight of all options
      * @return randomly weighted direction
      */
-    public static Direction PickRandomWeightedDirection(List<WeightedDirection> options, double totalWeight) {
+    public static Direction pickRandomWeightedDirection(List<WeightedDirection> options, double totalWeight) {
         Direction dir;
         if (options.size() == 0) {
             // no options were added, don't move (should never happen)

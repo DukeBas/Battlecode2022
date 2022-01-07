@@ -37,7 +37,7 @@ public class WeightedRandomDirectionBasedPathfinding implements Pathfinding {
 
         if (availableSpots.size() > 0) {
             // there are options
-            return RandomPreferLessRubblePathfinding.PickRandomWeightedDirection(availableSpots, totalWeight);
+            return RandomPreferLessRubblePathfinding.pickRandomWeightedDirection(availableSpots, totalWeight);
         } else {
             // No options!
             return Direction.CENTER;
