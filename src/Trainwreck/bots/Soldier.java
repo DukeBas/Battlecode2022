@@ -73,10 +73,10 @@ public class Soldier extends Robot {
             /*
              * If we have a target location, travel towards it
              */
-            if (Objects.nonNull(targetArchonLocation)){
+            if (targetArchonLocation != null) {
                 Pathfinding pathfinder = new DirectionBasedPathfinding();
                 dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
-           } else {
+            } else {
                 // move semi randomly
                 Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
                 dir = pathfinder.getDirection(myLocation, myLocation, rc);
@@ -99,13 +99,13 @@ public class Soldier extends Robot {
         /*
          * If we do not have a target yet, look for one in shared communications.
          */
-        if (Objects.isNull(targetArchonLocation)){
+        if (targetArchonLocation == null) {
             /*
              * If there are known enemy archons, set closest as target
              */
 //            rc.setIndicatorString("BEFORE getLocationClosestEnemyArchon");
             MapLocation closestEnemyArchon = comms.getLocationClosestEnemyArchon();
-            if (Objects.nonNull(closestEnemyArchon)){
+            if (closestEnemyArchon != null) {
                 // there is a known enemy archon location!
                 targetArchonLocation = closestEnemyArchon;
                 return; // prevent looking further
@@ -116,7 +116,7 @@ public class Soldier extends Robot {
              * If there are suspected locations which have an enemy archon.
              */
             MapLocation closestPotentialEnemyArchon = comms.getClosestPotentialEnemyArchonLocation();
-            if (Objects.nonNull(closestPotentialEnemyArchon)){
+            if (closestPotentialEnemyArchon != null) {
                 // there is a known enemy archon location!
                 targetArchonLocation = closestPotentialEnemyArchon;
             }

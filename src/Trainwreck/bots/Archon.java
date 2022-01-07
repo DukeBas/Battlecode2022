@@ -124,7 +124,7 @@ public class Archon extends Robot {
         if (rc.canSenseLocation(target)) {
             // it is in range!
             RobotInfo robotAtLocation = rc.senseRobotAtLocation(target);
-            if (Objects.nonNull(robotAtLocation)) {
+            if (robotAtLocation != null) {
                 // there's a robot here!
                 if (robotAtLocation.team.equals(enemy)) {
                     // enemy spotted! Record it!
