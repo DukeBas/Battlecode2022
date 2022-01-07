@@ -137,10 +137,14 @@ public class FirstCommunication implements Communication {
         int closestDistance = myLoc.distanceSquaredTo(closestArchon);
         for (int i = 1; i < archonLocations.length; i++) {
             int dist = myLoc.distanceSquaredTo(archonLocations[i]);
-            if (dist < closestDistance) {
+            if (locationIsValid(archonLocations[i]) && dist < closestDistance) {
                 closestArchon = archonLocations[i];
                 closestDistance = dist;
             }
+        }
+
+        if (!locationIsValid(closestArchon)){
+            return null;
         }
 
         return closestArchon;
