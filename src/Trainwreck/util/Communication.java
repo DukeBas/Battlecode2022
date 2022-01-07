@@ -22,6 +22,7 @@ public interface Communication {
 
     /**
      * Gets all the locations of enemy archons on the map.
+     * NOTE: Can give invalid locations indicating true location is unknown
      *
      * @return locations of enemy archons
      */
@@ -35,7 +36,7 @@ public interface Communication {
     MapLocation getLocationsClosestFriendlyArchon() throws GameActionException;
 
     /**
-     * Gets the locations of the closest enemy archon.
+     * Gets the locations of the closest enemy archon, returns Null if none are currently known.
      *
      * @return location of nearest enemy archon
      */
