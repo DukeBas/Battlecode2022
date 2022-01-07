@@ -72,5 +72,10 @@ public class Archon extends Robot {
         comms.addPotentialEnemyArchonLocation(new MapLocation(1, 1));
         MapLocation close = comms.getClosestPotentialEnemyArchonLocation();
         rc.setIndicatorString(close.toString() + " and there were " + comms.getNumberPotentialEnemyArchonLocations());
+
+        comms.invalidateLocationEnemyArchon(new MapLocation(1, 1));
+        MapLocation close2 = comms.getClosestPotentialEnemyArchonLocation();
+
+        rc.setIndicatorString("2: " + close2.toString() + " and there were " + comms.getNumberPotentialEnemyArchonLocations());
     }
 }

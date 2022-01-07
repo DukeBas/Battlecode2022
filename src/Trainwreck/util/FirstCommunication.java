@@ -208,6 +208,8 @@ public class FirstCommunication implements Communication {
                     rc.writeSharedArray(indexLast, 0); // clear it
                     rc.writeSharedArray(i, valueToMove); // move the value to the created gap to fill it
                     return;
+                } else { // clear the end
+                    rc.writeSharedArray(i, 0);
                 }
             }
         }
