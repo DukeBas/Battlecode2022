@@ -3,9 +3,10 @@ package Trainwreck.util;
 import battlecode.common.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class RandomPreferLessRubblePathfinding implements Pathfinding {
-    double preferenceStrength = 5; // Higher means less rubble is preferred even more.
+    private double preferenceStrength = 5; // Higher means less rubble is preferred even more.
 
     public RandomPreferLessRubblePathfinding() {
         // do not change default strength
@@ -18,7 +19,6 @@ public class RandomPreferLessRubblePathfinding implements Pathfinding {
     @Override
     public Direction getDirection(final MapLocation source, final MapLocation target, RobotController rc) {
         MapLocation myLocation = rc.getLocation();
-        Direction dir;
         ArrayList<WeightedDirection> options = new ArrayList<>();
         double totalWeight = 0;
 
@@ -39,6 +39,18 @@ public class RandomPreferLessRubblePathfinding implements Pathfinding {
             System.out.println("RandomPreferLessRubblePathfinding: checked location not in vision! " + e);
         }
 
+        return PickRandomWeightedDirection(options, totalWeight);
+    }
+
+    /**
+     * Picks a randomly weighted directions based on weights.
+     *
+     * @param options     list
+     * @param totalWeight of all options
+     * @return randomly weighted direction
+     */
+    public static Direction PickRandomWeightedDirection(List<WeightedDirection> options, double totalWeight) {
+        Direction dir;
         if (options.size() == 0) {
             // no options were added, don't move (should never happen)
             dir = Direction.CENTER;
@@ -53,14 +65,13 @@ public class RandomPreferLessRubblePathfinding implements Pathfinding {
             }
             dir = options.get(index).dir;
         }
-
         return dir;
     }
 
     /**
      * Record type for attaching a weight to a direction.
      */
-    private class WeightedDirection {
+    public static class WeightedDirection {
         public Direction dir;
         public double weight;
 

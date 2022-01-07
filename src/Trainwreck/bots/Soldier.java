@@ -1,9 +1,6 @@
 package Trainwreck.bots;
 
-import Trainwreck.util.Constants;
-import Trainwreck.util.DirectionBasedPathfinding;
-import Trainwreck.util.Pathfinding;
-import Trainwreck.util.RandomPreferLessRubblePathfinding;
+import Trainwreck.util.*;
 import battlecode.common.*;
 
 import java.util.Collections;
@@ -63,7 +60,7 @@ public class Soldier extends Robot {
         Direction dir;
         if (nearbyEnemies.length > 0) {
             // move towards an enemy.
-            Pathfinding pathfinder = new DirectionBasedPathfinding();
+            Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
             if (attackableEnemies.length > 0) { // prefer the enemy we are attacking currently
                 dir = pathfinder.getDirection(myLocation, attackableEnemies[0].location, rc);
             } else {
@@ -74,7 +71,7 @@ public class Soldier extends Robot {
              * If we have a target location, travel towards it
              */
             if (targetArchonLocation != null) {
-                Pathfinding pathfinder = new DirectionBasedPathfinding();
+                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
                 dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
             } else {
                 // move semi randomly
@@ -87,10 +84,12 @@ public class Soldier extends Robot {
          * Move if it is possible.
          */
 //        rc.setIndicatorString("Moving to " + dir);
-        if (rc.canMove(dir)) {
+        if (!dir.equals(Direction.CENTER) && rc.canMove(dir)) {
             rc.move(dir);
         }
     }
+
+
 
     @Override
     void communicationStrategy() throws GameActionException {
