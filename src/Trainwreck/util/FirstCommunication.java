@@ -259,20 +259,12 @@ public class FirstCommunication implements Communication {
 
     @Override
     public void increaseUnitCounter(int ArchonID, RobotType type) throws GameActionException {
-        /*
-         * Find index in shared array of archon with request ID
-         */
-        int archonIndex = INDEX_START_FRIENDLY_ARCHON;
-        for (int i = INDEX_START_FRIENDLY_ARCHON; i < INDEX_START_FRIENDLY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
-            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(ArchonID)) {
-                archonIndex = i;
-            }
-        }
+        int archonIndex = findIndexArchon(ArchonID);
 
         /*
          * Pre-calculate the appropriate indices to use.
          */
-        int indexFirstSlot = INDEX_START_COUNTERS + 2 * (archonIndex - INDEX_START_FRIENDLY_ARCHON);
+        int indexFirstSlot = getFirstIndexCounterForArchon(archonIndex);
         int indexSecondSlot = indexFirstSlot + 1;
 
         /*
@@ -282,7 +274,7 @@ public class FirstCommunication implements Communication {
         switch (type) {
             case MINER:
                 previous = rc.readSharedArray(indexFirstSlot);
-                rc.writeSharedArray(indexFirstSlot, previous + 1);
+                rc.writeSharedArray(indexFirstSlot, previous + 1); // use right 8 bits
                 break;
             case SAGE:
                 previous = rc.readSharedArray(indexFirstSlot);
@@ -290,13 +282,56 @@ public class FirstCommunication implements Communication {
                 break;
             case SOLDIER:
                 previous = rc.readSharedArray(indexSecondSlot);
-                rc.writeSharedArray(indexSecondSlot, previous + 1);
+                rc.writeSharedArray(indexSecondSlot, previous + 1); // use right 8 bits
                 break;
             case BUILDER:
                 previous = rc.readSharedArray(indexSecondSlot);
                 rc.writeSharedArray(indexSecondSlot, previous + 1024); // use left 8 bits
                 break;
         }
+    }
+
+    @Override
+    public int getUnitCounter(int ArchonID, RobotType type) throws GameActionException {
+        int archonIndex = findIndexArchon(ArchonID);
+
+        /*
+         * Pre-calculate the appropriate indices to use.
+         */
+        int indexFirstSlot = getFirstIndexCounterForArchon(archonIndex);
+        int indexSecondSlot = indexFirstSlot + 1;
+
+        switch (type) {
+            case MINER:
+                return rc.readSharedArray(indexFirstSlot) & 0b0000000011111111; // use right 8 bits
+            case SAGE:
+                return (rc.readSharedArray(indexFirstSlot) & 0b1111111100000000) / 1024; // use left 8 bits, so divide
+            case SOLDIER:
+                return rc.readSharedArray(indexSecondSlot) & 0b0000000011111111; // use right 8 bits
+            case BUILDER:
+                return (rc.readSharedArray(indexSecondSlot) & 0b1111111100000000) / 1024; // use left 8 bits, so divide
+            default:
+                return 0;
+        }
+
+    }
+
+    private int getFirstIndexCounterForArchon(int archonIndex) {
+        return INDEX_START_COUNTERS + 2 * (archonIndex - INDEX_START_FRIENDLY_ARCHON);
+    }
+
+    /**
+     * Find index in shared array of archon with request ID. Returns 0 if not found (should not happen)
+     *
+     * @param ArchonID robot ID
+     */
+    private int findIndexArchon(int ArchonID) throws GameActionException {
+        for (int i = INDEX_START_FRIENDLY_ARCHON; i < INDEX_START_FRIENDLY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
+            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(ArchonID)) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     @Override

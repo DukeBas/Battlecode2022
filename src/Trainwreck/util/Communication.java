@@ -100,6 +100,14 @@ public interface Communication {
     void increaseUnitCounter(int ArchonID, RobotType type) throws GameActionException;
 
     /**
+     * Gets current unit count of specified archon and created type.
+     * @param ArchonID ID of the archon which created the unit
+     * @param type     of the unit
+     * @return state of counter
+     */
+    int getUnitCounter(int ArchonID, RobotType type) throws GameActionException;
+
+    /**
      * Add a friendly archon to the known list.
      */
     void addFriendlyArchon() throws GameActionException;
