@@ -53,13 +53,12 @@ import java.util.ArrayList;
  * We use the first 6 bits for x, next 6 for y, and last 4 for extra information for encoding locations.
  */
 public class FirstCommunication implements Communication {
-    final int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
-    final int INDEX_START_ENEMY_ARCHON = 4; // 4,5,6,7
-    final int INDEX_START_COUNTERS = 12; // uses 2 per archon, so 12,13,14,15,16,17,18,19
-    final int INDEX_STATUS_BOOLS_ENEMY_COUNTER = 1;
-    final int INDEX_START_POTENTIAL_ENEMY_ARRAY = 20;
-
-    final int NUMBER_MAX_ARCHONS = 4;
+    private final static int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
+    private final static int INDEX_START_ENEMY_ARCHON = 4; // 4,5,6,7
+    private final static int INDEX_START_COUNTERS = 12; // uses 2 per archon, so 12,13,14,15,16,17,18,19
+    private final static int INDEX_STATUS_BOOLS_ENEMY_COUNTER = 1;
+    private final static int INDEX_START_POTENTIAL_ENEMY_ARRAY = 20;
+    private final static int NUMBER_MAX_ARCHONS = 4;
 
     /**
      * RobotController of the unit this object belongs to.
