@@ -11,8 +11,8 @@ public class Archon extends Robot {
     /**
      * Dimensions of the map. Map ranges between 20x20 and 60x60.
      */
-    final int mapWidth;
-    final int mapHeight;
+    private final int mapWidth;
+    private final int mapHeight;
 
     public Archon(RobotController rc) {
         super(rc);
@@ -124,7 +124,7 @@ public class Archon extends Robot {
         if (rc.canSenseLocation(target)) {
             // it is in range!
             RobotInfo robotAtLocation = rc.senseRobotAtLocation(target);
-            if (robotAtLocation != null) {
+            if (Objects.nonNull(robotAtLocation)) {
                 // there's a robot here!
                 if (robotAtLocation.team.equals(enemy)) {
                     // enemy spotted! Record it!
