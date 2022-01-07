@@ -37,8 +37,9 @@ public class Soldier extends Robot {
         /*
          * Attack lowest HP enemy, if there are any in range.
          */
+        MapLocation toAttack = null;
         if (attackableEnemies.length > 0) {
-            MapLocation toAttack = attackableEnemies[0].location;
+            toAttack = attackableEnemies[0].location;
             int lowestHP = attackableEnemies[0].health;
             for (int i = 1; i < attackableEnemies.length; i++) {
                 RobotInfo current = attackableEnemies[i];
@@ -61,8 +62,8 @@ public class Soldier extends Robot {
         if (nearbyEnemies.length > 0) {
             // move towards an enemy.
             Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
-            if (attackableEnemies.length > 0) { // prefer the enemy we are attacking currently
-                dir = pathfinder.getDirection(myLocation, attackableEnemies[0].location, rc);
+            if (toAttack != null) { // prefer the enemy we are attacking currently
+                dir = pathfinder.getDirection(myLocation, toAttack, rc);
             } else {
                 dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
             }
