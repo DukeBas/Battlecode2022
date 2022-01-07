@@ -89,12 +89,14 @@ public abstract class Robot {
                 System.out.println(rc.getType() + " GameAction-Exception");
                 e.printStackTrace();
 
+                rc.setIndicatorString("GameActionException: " + e.toString());
             } catch (Exception e) {
                 // Oh no! It looks like our code tried to do something bad. This isn't a
                 // GameActionException, so it's more likely to be a bug in our code.
                 System.out.println(rc.getType() + " Generic-Exception");
                 e.printStackTrace();
 
+                rc.setIndicatorString("Exception: " + e.toString());
             } finally {
                 // Signify we've done everything we want to do, thereby ending our turn.
                 // This will make our code wait until the next turn, and then perform this loop again.
@@ -110,19 +112,16 @@ public abstract class Robot {
      * Method to hold communication actions.
      */
     void communicationStrategy() throws GameActionException {
-        rc.setIndicatorString("start comms turn " + turnCount);
         comms.checkForEnemyArchons();
 
         /*
          * If we have a target location and can see it, then the archon was added before in comms.checkForEnemyArchons();
          * So only clear location if in vision range
          */
-        if (Objects.nonNull(targetArchonLocation) && rc.canSenseLocation(targetArchonLocation)){
+        if (targetArchonLocation != null && rc.canSenseLocation(targetArchonLocation)){
             // if location does not contain an enemy archon, invalidate it
             RobotInfo robotAtLocation = rc.senseRobotAtLocation(targetArchonLocation);
-            if (Objects.nonNull(robotAtLocation) && robotAtLocation.team == enemy){
-                // actually found an enemy archon!
-            } else {
+            if (!(robotAtLocation != null  && robotAtLocation.team == enemy)){
                 // nothing here! clear target location!
                 rc.setIndicatorString("NOTHING HERE, CLEARING");
                 comms.invalidateLocationEnemyArchon(targetArchonLocation);
