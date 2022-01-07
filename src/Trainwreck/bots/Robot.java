@@ -35,6 +35,11 @@ public abstract class Robot {
     final Communication comms;
 
     /**
+     * Variable to store ID of enemy team
+     */
+    final Team enemy;
+
+    /**
      * A random number generator.
      * We will use this RNG to make some random moves. The Random class is provided by the java.util.Random
      * import at the top of this file. Here, we *seed* the RNG with a constant number (6147); this makes sure
@@ -51,8 +56,10 @@ public abstract class Robot {
          */
         comms = new FirstCommunication(rc);
 
-        actionRadiusSquared = rc.getType().actionRadiusSquared; // Need to check how this works out for Lab
+        actionRadiusSquared = rc.getType().actionRadiusSquared; // Need to check how this works out for Lab as it has no action range
         visionRadiusSquared = rc.getType().visionRadiusSquared;
+
+        enemy = rc.getTeam().opponent();
     }
 
     /**
