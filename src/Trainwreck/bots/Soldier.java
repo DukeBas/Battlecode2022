@@ -6,6 +6,8 @@ import battlecode.common.*;
 import java.util.Collections;
 import java.util.Objects;
 
+import static Trainwreck.util.Helper.isCombatUnit;
+
 public class Soldier extends Robot {
 
     public Soldier(RobotController rc) {
@@ -35,17 +37,38 @@ public class Soldier extends Robot {
 
 
         /*
-         * Attack lowest HP enemy, if there are any in range.
+         * Attack lowest HP enemy, if there are any in range. Preferring combat units.
          */
         MapLocation toAttack = null;
         if (attackableEnemies.length > 0) {
             toAttack = attackableEnemies[0].location;
+            // target soldiers, sages, and watchtowers over other units
+            boolean foundCombatUnit = isCombatUnit(attackableEnemies[0].getType());
             int lowestHP = attackableEnemies[0].health;
             for (int i = 1; i < attackableEnemies.length; i++) {
                 RobotInfo current = attackableEnemies[i];
-                if (current.health < lowestHP) {
-                    toAttack = current.location;
-                    lowestHP = current.health;
+
+                // once we find a combat unit, do not consider non-combat units anymore
+                if (foundCombatUnit){
+                    // combat unit found before!
+                    if (current.health < lowestHP && isCombatUnit(current.getType())) {
+                        toAttack = current.location;
+                        lowestHP = current.health;
+                    }
+                } else {
+                    // only non-combat unit(s) found before!
+                    // Add it regardless of HP if it is a combat unit!
+                    if (isCombatUnit(current.getType())){
+                        toAttack = current.location;
+                        lowestHP = current.health;
+                        foundCombatUnit = true;
+                    }
+
+                    // No combat units! We can consider non-combat units!
+                    if (current.health < lowestHP) {
+                        toAttack = current.location;
+                        lowestHP = current.health;
+                    }
                 }
             }
 
@@ -89,7 +112,6 @@ public class Soldier extends Robot {
             rc.move(dir);
         }
     }
-
 
 
     @Override
