@@ -124,14 +124,22 @@ public class Miner extends Robot {
          * Since array is sorted, if the first place does not contain gold, none will. If the first place does
          * contain gold, then it automatically also contains the most amount available nearby.
          * Do not go to lead deposits with only 1 left. (see earlier comment for what locations we consider.)
+         * Help looking for enemy archons (and hopefully find more lead in the process as well) when there are
+         * no resources in sight.
          */
         Direction dir;
         if (ResourceLocations.size() > 0) { // there are targets
             LocationWithResources target = ResourceLocations.get(0);
             if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
-                // move randomly
-                Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
-                dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
+                if (targetArchonLocation != null) { // help with scouting!
+                    Pathfinding randomPathfinder = new WeightedRandomDirectionBasedPathfinding();
+                    dir = randomPathfinder.getDirection(myLocation, targetArchonLocation, rc);
+                } else {
+                    // move randomly
+                    Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
+                    dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
+                }
+
             } else { // find direction to target
                 Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
                 dir = pathfinder.getDirection(myLocation, target.loc, rc);
@@ -140,9 +148,14 @@ public class Miner extends Robot {
                 }
             }
         } else {
-            // move randomly
-            Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
-            dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
+            if (targetArchonLocation != null) { // help with scouting!
+                Pathfinding randomPathfinder = new WeightedRandomDirectionBasedPathfinding();
+                dir = randomPathfinder.getDirection(myLocation, targetArchonLocation, rc);
+            } else {
+                // move randomly
+                Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
+                dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
+            }
         }
 
         // try to move toward target, if not already there
@@ -151,6 +164,19 @@ public class Miner extends Robot {
             rc.move(dir);
         }
     }
+
+
+    @Override
+    void communicationStrategy() throws GameActionException {
+        super.communicationStrategy(); // execute commands in super class
+
+        /*
+         * Update target, if one is available
+         */
+        targetArchonLocation = comms.getClosestPotentialEnemyArchonLocation();
+    }
+
+
 }
 
 /**

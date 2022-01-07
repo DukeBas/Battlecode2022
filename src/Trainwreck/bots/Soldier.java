@@ -49,7 +49,7 @@ public class Soldier extends Robot {
                 RobotInfo current = attackableEnemies[i];
 
                 // once we find a combat unit, do not consider non-combat units anymore
-                if (foundCombatUnit){
+                if (foundCombatUnit) {
                     // combat unit found before!
                     if (current.health < lowestHP && isCombatUnit(current.getType())) {
                         toAttack = current.location;
@@ -58,7 +58,7 @@ public class Soldier extends Robot {
                 } else {
                     // only non-combat unit(s) found before!
                     // Add it regardless of HP if it is a combat unit!
-                    if (isCombatUnit(current.getType())){
+                    if (isCombatUnit(current.getType())) {
                         toAttack = current.location;
                         lowestHP = current.health;
                         foundCombatUnit = true;
@@ -119,29 +119,20 @@ public class Soldier extends Robot {
         super.communicationStrategy(); // execute commands in super class
 
         /*
-         * If we do not have a target yet, look for one in shared communications.
+         * Update target. If there are known enemy archons, set closest as target.
          */
-        if (targetArchonLocation == null) {
-            /*
-             * If there are known enemy archons, set closest as target
-             */
-//            rc.setIndicatorString("BEFORE getLocationClosestEnemyArchon");
-            MapLocation closestEnemyArchon = comms.getLocationClosestEnemyArchon();
-            if (closestEnemyArchon != null) {
-                // there is a known enemy archon location!
-                targetArchonLocation = closestEnemyArchon;
-                return; // prevent looking further
-            }
-//            rc.setIndicatorString("AFTER getLocationClosestEnemyArchon");
-
-            /*
-             * If there are suspected locations which have an enemy archon.
-             */
-            MapLocation closestPotentialEnemyArchon = comms.getClosestPotentialEnemyArchonLocation();
-            if (closestPotentialEnemyArchon != null) {
-                // there is a known enemy archon location!
-                targetArchonLocation = closestPotentialEnemyArchon;
-            }
+        MapLocation closestEnemyArchon = comms.getLocationClosestEnemyArchon();
+        if (closestEnemyArchon != null) {
+            // there is a known enemy archon location!
+            targetArchonLocation = closestEnemyArchon;
+            return; // prevent looking further
         }
+
+        /*
+         * Set suspected location which have an enemy archon as target, if we do not have on yet
+         */
+        targetArchonLocation = comms.getClosestPotentialEnemyArchonLocation();
+
     }
 }
+
