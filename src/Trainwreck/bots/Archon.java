@@ -64,10 +64,7 @@ public class Archon extends Robot {
      */
     private void commsSecondRound() throws GameActionException {
         rc.setIndicatorString("start second");
-        comms.addPotentialEnemyArchonLocation(new MapLocation(
-                (int) Math.round(Math.random() * 10),
-                (int) Math.round(Math.random() * 10)
-        ));
+        comms.addPotentialEnemyArchonLocation(new MapLocation(7, 9));
         comms.addPotentialEnemyArchonLocation(new MapLocation(1, 1));
         comms.addPotentialEnemyArchonLocation(new MapLocation(1, 1));
         MapLocation close = comms.getClosestPotentialEnemyArchonLocation();
@@ -76,6 +73,16 @@ public class Archon extends Robot {
         comms.invalidateLocationEnemyArchon(new MapLocation(1, 1));
         MapLocation close2 = comms.getClosestPotentialEnemyArchonLocation();
 
-        rc.setIndicatorString("2: " + close2.toString() + " and there were " + comms.getNumberPotentialEnemyArchonLocations());
+//        rc.setIndicatorString("2: " + close2.toString() + " and there were " + comms.getNumberPotentialEnemyArchonLocations());
+
+        rc.setIndicatorString("TESTEST");
+
+        comms.addEnemyArchon(new MapLocation(7, 9), 5);
+
+//        MapLocation close3 = comms.getClosestPotentialEnemyArchonLocation();
+//        rc.setIndicatorString("3: " + close3.toString() + " and there were " + comms.getNumberPotentialEnemyArchonLocations());
+        rc.setIndicatorString("Closest enemy base is " + comms.getLocationClosestEnemyArchon() + " and there are " + comms.getNumberPotentialEnemyArchonLocations());
+
+        //TODO add potential enemy bases based on symmetries
     }
 }

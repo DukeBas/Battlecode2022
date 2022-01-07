@@ -30,18 +30,16 @@ public interface Communication {
     /**
      * Gets the locations of the closest friendly archon.
      *
-     * @param loc location to consider archons nearest to.
      * @return location of nearest friendly archon
      */
-    MapLocation getLocationsClosestFriendlyArchon(MapLocation loc) throws GameActionException;
+    MapLocation getLocationsClosestFriendlyArchon() throws GameActionException;
 
     /**
      * Gets the locations of the closest enemy archon.
      *
-     * @param loc location to consider archons nearest to.
      * @return location of nearest enemy archon
      */
-    MapLocation getLocationsClosestEnemyArchon(MapLocation loc) throws GameActionException;
+    MapLocation getLocationClosestEnemyArchon() throws GameActionException;
 
     /**
      * Gives location of friendly archon with a specified robot ID.
@@ -84,13 +82,13 @@ public interface Communication {
      */
     void updateLocationFriendlyArchon(int RobotID, MapLocation loc) throws GameActionException;
 
-    /**
-     * Updates known location of enemy archon.
-     *
-     * @param RobotID of the enemy archon
-     * @param loc     MapLocation of the archon
-     */
-    void updateLocationEnemyArchon(int RobotID, MapLocation loc) throws GameActionException;
+//    /**
+//     * Updates known location of enemy archon.
+//     *
+//     * @param RobotID of the enemy archon
+//     * @param loc     MapLocation of the archon
+//     */
+//    void updateLocationEnemyArchon(int RobotID, MapLocation loc) throws GameActionException;
 
     /**
      * Increases counter of certain unit type (per archon counter)
@@ -104,6 +102,13 @@ public interface Communication {
      * Add a friendly archon to the known list.
      */
     void addFriendlyArchon() throws GameActionException;
+
+    /**
+     * Add an enemy archon to the known list. Updates location if it is known already.
+     *
+     * @param loc location of the enemy archon.
+     */
+    void addEnemyArchon(MapLocation loc, int RobotID) throws GameActionException;
 
     /**
      * Add a location of interest for a potential enemy archon location.
@@ -122,6 +127,7 @@ public interface Communication {
 
     /**
      * Gives the closest location that might have an enemy archon.
+     * Returns null if there is none.
      *
      * @return location of closest suspected enemy archon, if there is one
      */
