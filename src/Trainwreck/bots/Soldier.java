@@ -7,6 +7,7 @@ import Trainwreck.util.RandomPreferLessRubblePathfinding;
 import battlecode.common.*;
 
 import java.util.Collections;
+import java.util.Objects;
 
 public class Soldier extends Robot {
 
@@ -21,16 +22,20 @@ public class Soldier extends Robot {
      */
     @Override
     void run() throws GameActionException {
-        // Get the enemy team
-        Team opponent = rc.getTeam().opponent();
-
         MapLocation myLocation = rc.getLocation();
+
+        /*
+         * Communicate!
+         */
+        communicationStrategy();
+
 
         /*
          * Get nearby enemies.
          */
-        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(visionRadiusSquared, opponent);
-        RobotInfo[] attackableEnemies = rc.senseNearbyRobots(actionRadiusSquared, opponent);
+        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(visionRadiusSquared, enemy);
+        RobotInfo[] attackableEnemies = rc.senseNearbyRobots(actionRadiusSquared, enemy);
+
 
         /*
          * Attack lowest HP enemy, if there are any in range.
@@ -65,9 +70,17 @@ public class Soldier extends Robot {
                 dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
             }
         } else {
-            // move semi randomly
-            Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
-            dir = pathfinder.getDirection(myLocation, myLocation, rc);
+            /*
+             * If we have a target location, travel towards it
+             */
+            if (Objects.nonNull(targetArchonLocation)){
+                Pathfinding pathfinder = new DirectionBasedPathfinding();
+                dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
+           } else {
+                // move semi randomly
+                Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
+                dir = pathfinder.getDirection(myLocation, myLocation, rc);
+            }
         }
 
         /*
@@ -76,6 +89,37 @@ public class Soldier extends Robot {
 //        rc.setIndicatorString("Moving to " + dir);
         if (rc.canMove(dir)) {
             rc.move(dir);
+        }
+    }
+
+    @Override
+    void communicationStrategy() throws GameActionException {
+        super.communicationStrategy(); // execute commands in super class
+
+        /*
+         * If we do not have a target yet, look for one in shared communications.
+         */
+        if (Objects.isNull(targetArchonLocation)){
+            /*
+             * If there are known enemy archons, set closest as target
+             */
+//            rc.setIndicatorString("BEFORE getLocationClosestEnemyArchon");
+            MapLocation closestEnemyArchon = comms.getLocationClosestEnemyArchon();
+            if (Objects.nonNull(closestEnemyArchon)){
+                // there is a known enemy archon location!
+                targetArchonLocation = closestEnemyArchon;
+                return; // prevent looking further
+            }
+//            rc.setIndicatorString("AFTER getLocationClosestEnemyArchon");
+
+            /*
+             * If there are suspected locations which have an enemy archon.
+             */
+            MapLocation closestPotentialEnemyArchon = comms.getClosestPotentialEnemyArchonLocation();
+            if (Objects.nonNull(closestPotentialEnemyArchon)){
+                // there is a known enemy archon location!
+                targetArchonLocation = closestPotentialEnemyArchon;
+            }
         }
     }
 }
