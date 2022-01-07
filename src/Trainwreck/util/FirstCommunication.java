@@ -370,6 +370,13 @@ public class FirstCommunication implements Communication {
     @Override
     public void addPotentialEnemyArchonLocation(MapLocation loc) throws GameActionException {
         /*
+         * First check if location is even valid
+         */
+        if (!locationIsValid(loc)) {
+            return;
+        }
+
+        /*
          * Only write the location if it is new
          */
         for (MapLocation l : getLocationsPotentialEnemyArchons()) {

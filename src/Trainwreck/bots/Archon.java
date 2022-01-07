@@ -90,7 +90,7 @@ public class Archon extends Robot {
             // Not necessary?
 
             // Rotation 180 degrees
-            addSymmetricLocation(new MapLocation(mapHeight - myLoc.y - 1, mapWidth - myLoc.x - 1));
+            addSymmetricLocation(new MapLocation(mapWidth - myLoc.x - 1, mapHeight - myLoc.y - 1));
 
             // Rotation 270 degrees
             // Not necessary?
