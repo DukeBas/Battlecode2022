@@ -167,6 +167,7 @@ public interface Communication {
 
     /**
      * Gives the number of suspected enemy archon locations.
+     *
      * @return number of suspected enemy archon location
      */
     int getNumberPotentialEnemyArchonLocations() throws GameActionException;
@@ -177,6 +178,11 @@ public interface Communication {
      * @return all currently suspected enemy archon locations
      */
     MapLocation[] getLocationsPotentialEnemyArchons() throws GameActionException;
+
+    /**
+     * Scans for enemy robots, marks archons. Not efficient if already looking for enemy bots before.
+     */
+    void checkForEnemyArchons() throws GameActionException;
 
     //TODO add protocols for when a friendly archon gets destroyed
 }

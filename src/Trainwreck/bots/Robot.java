@@ -4,6 +4,7 @@ import Trainwreck.util.Communication;
 import Trainwreck.util.FirstCommunication;
 import battlecode.common.*;
 
+import java.util.Objects;
 import java.util.Random;
 
 public abstract class Robot {
@@ -33,6 +34,11 @@ public abstract class Robot {
      * Interface to interact with the shared memory
      */
     final Communication comms;
+
+    /**
+     * Variable to hold a location as a target enemy archon.
+     */
+    MapLocation targetArchonLocation = null;
 
     /**
      * Variable to store ID of enemy team
@@ -98,6 +104,31 @@ public abstract class Robot {
         }
 
         // Execution should never reach here. (unless intentional) Self-destruction imminent!
+    }
+
+    /**
+     * Method to hold communication actions.
+     */
+    void communicationStrategy() throws GameActionException {
+        rc.setIndicatorString("start comms turn " + turnCount);
+        comms.checkForEnemyArchons();
+
+        /*
+         * If we have a target location and can see it, then the archon was added before in comms.checkForEnemyArchons();
+         * So only clear location if in vision range
+         */
+        if (Objects.nonNull(targetArchonLocation) && rc.canSenseLocation(targetArchonLocation)){
+            // if location does not contain an enemy archon, invalidate it
+            RobotInfo robotAtLocation = rc.senseRobotAtLocation(targetArchonLocation);
+            if (Objects.nonNull(robotAtLocation) && robotAtLocation.team == enemy){
+                // actually found an enemy archon!
+            } else {
+                // nothing here! clear target location!
+                rc.setIndicatorString("NOTHING HERE, CLEARING");
+                comms.invalidateLocationEnemyArchon(targetArchonLocation);
+                targetArchonLocation = null;
+            }
+        }
     }
 
     /**

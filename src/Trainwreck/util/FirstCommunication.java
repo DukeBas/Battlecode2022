@@ -1,9 +1,6 @@
 package Trainwreck.util;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 import java.util.ArrayList;
 
@@ -133,6 +130,11 @@ public class FirstCommunication implements Communication {
         MapLocation myLoc = rc.getLocation();
 
         MapLocation[] archonLocations = getMapLocationsArchons(index_start_archons, NUMBER_MAX_ARCHONS);
+
+        if (archonLocations.length == 0) { // no archons found yet!
+            return null;
+        }
+
         MapLocation closestArchon = archonLocations[0];
         int closestDistance = myLoc.distanceSquaredTo(closestArchon);
         for (int i = 1; i < archonLocations.length; i++) {
@@ -143,7 +145,7 @@ public class FirstCommunication implements Communication {
             }
         }
 
-        if (!locationIsValid(closestArchon)){
+        if (!locationIsValid(closestArchon)) {
             return null;
         }
 
@@ -179,7 +181,8 @@ public class FirstCommunication implements Communication {
     public void invalidateLocationEnemyArchon(int RobotID) throws GameActionException {
         for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
             if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(RobotID)) {
-                rc.writeSharedArray(i, encodeID(RobotID));
+                rc.writeSharedArray(i, locationEncoder(new MapLocation(61, 61),
+                        locationExtraDecoder(rc.readSharedArray(i)))); // write invalid location and normal ID
                 return;
             }
         }
@@ -192,12 +195,17 @@ public class FirstCommunication implements Communication {
         for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
             if (loc.equals(locationDecoder(rc.readSharedArray(i)))) {
                 rc.writeSharedArray(i, locationEncoder(new MapLocation(61, 61),
-                        locationExtraDecoder(rc.readSharedArray(i)))); // write invalid location and ID
+                        locationExtraDecoder(rc.readSharedArray(i)))); // write invalid location and normal ID
                 return;
             }
         }
 
         removePotentialEnemyArchonIfFound(loc);
+
+//        rc.setIndicatorString("end invali " +
+//                rc.readSharedArray(INDEX_START_POTENTIAL_ENEMY_ARRAY) + " " +
+//                rc.readSharedArray( INDEX_START_POTENTIAL_ENEMY_ARRAY + 1));
+
     }
 
     /**
@@ -211,16 +219,18 @@ public class FirstCommunication implements Communication {
             if (loc.equals(locationDecoder(rc.readSharedArray(i)))) {
                 decreasePotentialEnemyArchonCounter();
                 potentialEnemyCounter--;
-                if (i < potentialEnemyCounter) { // check if we created a gap in array
+                if (i < INDEX_START_POTENTIAL_ENEMY_ARRAY + potentialEnemyCounter) { // check if we created a gap in array
                     // we created a gap, move the last one to the gap to have a filled array part
-                    int indexLast = INDEX_START_POTENTIAL_ENEMY_ARRAY + potentialEnemyCounter + 1;
+                    int indexLast = INDEX_START_POTENTIAL_ENEMY_ARRAY + potentialEnemyCounter;
                     int valueToMove = rc.readSharedArray(indexLast);
+                    rc.setIndicatorString("FILLING GAP lastIndex" + indexLast);
                     rc.writeSharedArray(indexLast, 0); // clear it
                     rc.writeSharedArray(i, valueToMove); // move the value to the created gap to fill it
-                    return;
                 } else { // clear the end
+                    rc.setIndicatorString("CLEAR END");
                     rc.writeSharedArray(i, 0);
                 }
+                return;
             }
         }
     }
@@ -348,6 +358,17 @@ public class FirstCommunication implements Communication {
     }
 
     @Override
+    public void checkForEnemyArchons() throws GameActionException {
+        RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+        for (RobotInfo r : enemies) {
+            if (r.getType() == RobotType.ARCHON) {
+                addEnemyArchon(r.getLocation(), r.getID());
+                rc.setIndicatorString("FOUND ARCHON!");
+            }
+        }
+    }
+
+    @Override
     public void addPotentialEnemyArchonLocation(MapLocation loc) throws GameActionException {
         /*
          * Only write the location if it is new
@@ -376,6 +397,9 @@ public class FirstCommunication implements Communication {
 
         MapLocation[] archonLocations = getMapLocationsArchons(INDEX_START_POTENTIAL_ENEMY_ARRAY,
                 getPotentialEnemyArchonCounter());
+
+//        rc.setIndicatorString("pot arr length: "+ archonLocations.length + " while " + getPotentialEnemyArchonCounter());
+//        rc.setIndicatorString(rc.readSharedArray(INDEX_START_POTENTIAL_ENEMY_ARRAY) + " " + INDEX_START_POTENTIAL_ENEMY_ARRAY + 1);
 
         MapLocation closestPotentialArchon = archonLocations[0];
         int closestDistance = myLoc.distanceSquaredTo(closestPotentialArchon);
@@ -440,6 +464,6 @@ public class FirstCommunication implements Communication {
     }
 
     private int encodeID(int RobotID) {
-        return RobotID % 15 + 1; //TODO: better mapping than modulo, use a space in the array
+        return RobotID % 14 + 1; //TODO: better mapping than modulo, use a space in the array
     }
 }

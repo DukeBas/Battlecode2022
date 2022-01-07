@@ -29,7 +29,7 @@ public class Archon extends Robot {
      */
     @Override
     void run() throws GameActionException {
-        // execture communication strategy
+        // execute communication strategy
         communicationStrategy();
 
         //Pick a direction to build in.
@@ -52,13 +52,17 @@ public class Archon extends Robot {
     /**
      * Communications strategy used by the archons.
      */
-    private void communicationStrategy() throws GameActionException {
+    @Override
+    void communicationStrategy() throws GameActionException {
+        super.communicationStrategy();
+
         rc.setIndicatorString(turnCount + "");
         if (turnCount == 1) {
             commsFirstRound();
         } else if (turnCount == 2) {
             commsSecondRound();
         }
+
     }
 
     /**
@@ -83,13 +87,13 @@ public class Archon extends Robot {
         // Clockwise rotations only happen on square maps!
         if (mapWidth == mapHeight) {
             // Rotation 90 degrees
-            //TODO...
+            // Not necessary?
 
             // Rotation 180 degrees
-            //TODO...
+            addSymmetricLocation(new MapLocation(mapHeight - myLoc.y - 1, mapWidth - myLoc.x - 1));
 
             // Rotation 270 degrees
-            //TODO...
+            // Not necessary?
         }
         // Reflection horizontal
         addSymmetricLocation(new MapLocation(myLoc.x, mapHeight - myLoc.y - 1));
@@ -140,7 +144,7 @@ public class Archon extends Robot {
          */
         MapLocation[] friendlyArchons = comms.getLocationsFriendlyArchons();
         for (MapLocation loc : friendlyArchons) { // check all known friendly archons
-            if (target.equals(loc)){
+            if (target.equals(loc)) {
                 // We found a friendly archon on that position! Disproven!
                 return;
             }

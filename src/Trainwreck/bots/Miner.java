@@ -30,6 +30,11 @@ public class Miner extends Robot {
     void run() throws GameActionException {
         MapLocation myLocation = rc.getLocation();
 
+        /*
+         * Communicate!
+         */
+        communicationStrategy();
+
         List<LocationWithResources> ResourceLocations = new ArrayList<>();
         List<LocationWithResources> MineableLocations = new ArrayList<>();
 
@@ -144,7 +149,7 @@ public class Miner extends Robot {
         }
 
         // try to move toward target, if not already there
-        rc.setIndicatorString("canMove(" + dir + ") = " + rc.canMove(dir));
+//        rc.setIndicatorString("canMove(" + dir + ") = " + rc.canMove(dir));
         if (rc.canMove(dir)) { // do not move if already at target
             rc.move(dir);
         }
