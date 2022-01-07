@@ -337,7 +337,8 @@ public class FirstCommunication implements Communication {
         removePotentialEnemyArchonIfFound(loc);
     }
 
-    private MapLocation[] getLocationsPotentialEnemyArchons() throws GameActionException {
+    @Override
+    public MapLocation[] getLocationsPotentialEnemyArchons() throws GameActionException {
         int numPotentialEnemyArchonLocations = getPotentialEnemyArchonCounter();
         MapLocation[] out = new MapLocation[numPotentialEnemyArchonLocations];
         for (int i = 0; i < out.length; i++) {

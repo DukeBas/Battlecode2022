@@ -170,4 +170,13 @@ public interface Communication {
      * @return number of suspected enemy archon location
      */
     int getNumberPotentialEnemyArchonLocations() throws GameActionException;
+
+    /**
+     * Gives all suspected enemy archon locations.
+     *
+     * @return all currently suspected enemy archon locations
+     */
+    MapLocation[] getLocationsPotentialEnemyArchons() throws GameActionException;
+
+    //TODO add protocols for when a friendly archon gets destroyed
 }
