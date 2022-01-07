@@ -112,7 +112,6 @@ public abstract class Robot {
      * Method to hold communication actions.
      */
     void communicationStrategy() throws GameActionException {
-        rc.setIndicatorString("start comms turn " + turnCount);
         comms.checkForEnemyArchons();
 
         /*
