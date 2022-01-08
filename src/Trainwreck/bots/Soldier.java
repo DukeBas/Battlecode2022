@@ -104,6 +104,8 @@ public class Soldier extends Robot {
             }
         }
 
+//        rc.setIndicatorString("cur: " + targetArchonLocation + " close " + comms.getLocationClosestEnemyArchon());
+
         /*
          * Move if it is possible.
          */
