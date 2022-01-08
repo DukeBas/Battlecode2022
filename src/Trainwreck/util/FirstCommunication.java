@@ -322,6 +322,45 @@ public class FirstCommunication implements Communication {
 
     }
 
+    @Override
+    public void resetUnitCounter(int ArchonID, RobotType type) throws GameActionException {
+        int archonIndex = findIndexArchon(ArchonID);
+
+        /*
+         * Pre-calculate the appropriate indices to use.
+         */
+        int indexFirstSlot = getFirstIndexCounterForArchon(archonIndex);
+        int indexSecondSlot = indexFirstSlot + 1;
+
+        switch (type) {
+            case MINER:
+                rc.writeSharedArray(indexFirstSlot, (rc.readSharedArray(indexFirstSlot) / 1024) * 1024);
+            case SAGE:
+                rc.writeSharedArray(indexFirstSlot, rc.readSharedArray(indexFirstSlot) % 1024);
+            case SOLDIER:
+                rc.writeSharedArray(indexSecondSlot, (rc.readSharedArray(indexFirstSlot) / 1024) * 1024);
+            case BUILDER:
+                rc.writeSharedArray(indexSecondSlot, rc.readSharedArray(indexFirstSlot) % 1024);
+        }
+    }
+
+    @Override
+    public void resetAllUnitCounters(int ArchonID) throws GameActionException {
+        int archonIndex = findIndexArchon(ArchonID);
+
+        /*
+         * Pre-calculate the appropriate indices to use.
+         */
+        int indexFirstSlot = getFirstIndexCounterForArchon(archonIndex);
+        int indexSecondSlot = indexFirstSlot + 1;
+
+        /*
+         * Reset all counters.
+         */
+        rc.writeSharedArray(indexFirstSlot, 0);
+        rc.writeSharedArray(indexSecondSlot, 0);
+    }
+
     private int getFirstIndexCounterForArchon(int archonIndex) {
         return INDEX_START_COUNTERS + 2 * (archonIndex - INDEX_START_FRIENDLY_ARCHON);
     }

@@ -108,6 +108,19 @@ public interface Communication {
     int getUnitCounter(int ArchonID, RobotType type) throws GameActionException;
 
     /**
+     * Resets the unit counter for a particular archon and unit type.
+     * @param ArchonID ID of the archon which created the unit
+     * @param type RobotType of the particular unit type
+     */
+    void resetUnitCounter(int ArchonID, RobotType type) throws GameActionException;
+
+    /**
+     * Resets all the unit counters for a particular archon.
+     * @param ArchonID ID of the archon which created the unit
+     */
+    void resetAllUnitCounters(int ArchonID) throws GameActionException;
+
+    /**
      * Add a friendly archon to the known list.
      */
     void addFriendlyArchon() throws GameActionException;
