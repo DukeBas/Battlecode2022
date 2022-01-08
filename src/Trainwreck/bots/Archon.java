@@ -32,6 +32,23 @@ public class Archon extends Robot {
         // execute communication strategy
         communicationStrategy();
 
+        /*
+         * Get number of units currently alive (or at least last turn). Reset counter to be accurate for next turn.
+         */
+        int ownID = rc.getID();
+        int numberOfMiners = comms.getUnitCounter(ownID, RobotType.MINER);
+        int numberOfSages = comms.getUnitCounter(ownID, RobotType.SAGE);
+        int numberOfSoldiers = comms.getUnitCounter(ownID, RobotType.SOLDIER);
+        int numberOfBuilders = comms.getUnitCounter(ownID, RobotType.BUILDER);
+        comms.resetAllUnitCounters(ownID);
+
+        // TESTING PURPOSES:
+        rc.setIndicatorString("Miners: " + numberOfMiners +
+                ", Sages: " + numberOfSages +
+                ", Soldiers:" + numberOfSoldiers +
+                ", Builders:" + numberOfBuilders);
+
+
         //Pick a direction to build in.
         Direction dir = Constants.directions[rng.nextInt(Constants.directions.length)];
         if (rng.nextBoolean()) {
