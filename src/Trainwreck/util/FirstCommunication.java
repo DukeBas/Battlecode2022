@@ -53,6 +53,7 @@ import java.util.ArrayList;
  * We use the first 6 bits for x, next 6 for y, and last 4 for extra information for encoding locations.
  */
 public class FirstCommunication implements Communication {
+    private final static int INDEX_STATE = 1;
     private final static int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
     private final static int INDEX_START_ENEMY_ARCHON = 4; // 4,5,6,7
     private final static int INDEX_START_COUNTERS = 12; // uses 2 per archon, so 12,13,14,15,16,17,18,19
@@ -92,6 +93,25 @@ public class FirstCommunication implements Communication {
     @Override
     public boolean locationIsValid(MapLocation loc) {
         return loc.x >= 0 && loc.y >= 0 && loc.x < mapWidth && loc.y < mapHeight;
+    }
+
+    @Override
+    public void setState(Status s, boolean bool) throws GameActionException {
+        int old = rc.readSharedArray(INDEX_STATE);
+        switch (s){
+            default:
+                // we do not know what to do with this status!
+                break;
+        }
+    }
+
+    @Override
+    public boolean getState(Status s) throws GameActionException {
+        switch (s){
+            default:
+                // we do not know what to do with this status!
+                return false;
+        }
     }
 
     @Override
