@@ -152,14 +152,14 @@ public abstract class Robot {
                 System.out.println(ownType + " GameAction-Exception");
                 e.printStackTrace();
 
-                rc.setIndicatorString("GameActionException: " + e.toString());
+                rc.setIndicatorString("GameActionException: " + e);
             } catch (Exception e) {
                 // Oh no! It looks like our code tried to do something bad. This isn't a
                 // GameActionException, so it's more likely to be a bug in our code.
                 System.out.println(ownType + " Generic-Exception");
                 e.printStackTrace();
 
-                rc.setIndicatorString("Exception: " + e.toString());
+                rc.setIndicatorString("Exception: " + e);
             } finally {
                 // Signify we've done everything we want to do, thereby ending our turn.
                 // This will make our code wait until the next turn, and then perform this loop again.
@@ -196,12 +196,12 @@ public abstract class Robot {
          * Increase unit counters, so archons know how many units of each type are alive at all times.
          */
         if (isDroid(ownType)) {
-
+            increaseUnitCounter();
         }
     }
 
-    private increaseUnitCounter() {
-        comms.increaseUnitCounter();
+    private void increaseUnitCounter() throws GameActionException {
+        comms.increaseUnitCounter(builtByID, ownType);
     }
 
     /**
