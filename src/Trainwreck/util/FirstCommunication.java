@@ -134,6 +134,12 @@ public class FirstCommunication implements Communication {
             return null;
         }
 
+        StringBuilder out = new StringBuilder();
+        for (MapLocation loc : archonLocations) {
+            out.append(loc.toString()).append(" ");
+        }
+        rc.setIndicatorString(out.toString());
+
         MapLocation closestArchon = archonLocations[0];
         int closestDistance = myLoc.distanceSquaredTo(closestArchon);
         for (int i = 1; i < archonLocations.length; i++) {
@@ -222,11 +228,11 @@ public class FirstCommunication implements Communication {
                     // we created a gap, move the last one to the gap to have a filled array part
                     int indexLast = INDEX_START_POTENTIAL_ENEMY_ARRAY + potentialEnemyCounter;
                     int valueToMove = rc.readSharedArray(indexLast);
-                    rc.setIndicatorString("FILLING GAP lastIndex" + indexLast);
+//                    rc.setIndicatorString("FILLING GAP lastIndex" + indexLast);
                     rc.writeSharedArray(indexLast, 0); // clear it
                     rc.writeSharedArray(i, valueToMove); // move the value to the created gap to fill it
                 } else { // clear the end
-                    rc.setIndicatorString("CLEAR END");
+//                    rc.setIndicatorString("CLEAR END");
                     rc.writeSharedArray(i, 0);
                 }
                 return;
@@ -352,6 +358,7 @@ public class FirstCommunication implements Communication {
         /*
          * Check if it is already known
          */
+        boolean notSeenBefore = true;
         for (int i = INDEX_START_ENEMY_ARCHON; i < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
             int val = rc.readSharedArray(i);
             int extraInfo = locationExtraDecoder(val);
@@ -362,18 +369,22 @@ public class FirstCommunication implements Communication {
                 if (!loc.equals(locationDecoder(val))) {
                     rc.writeSharedArray(i, locationEncoder(loc, encodeID(RobotID)));
                 }
+                notSeenBefore = false;
                 break;
-            } else {
-                // it has a new ID! Find an empty spot in the list and add it
-                for (int j = INDEX_START_ENEMY_ARCHON; j < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; j++) { // looks really weird
-                    if (rc.readSharedArray(j) == 0) { // check if spot is empty
-                        rc.writeSharedArray(j, locationEncoder(loc, encodeID(RobotID)));
-                        break;
-                    }
-                }
             }
         }
 
+        /*
+         * If it has a new ID, find an empty spot in the list and add it.
+         */
+        if (notSeenBefore) {
+            for (int j = INDEX_START_ENEMY_ARCHON; j < INDEX_START_ENEMY_ARCHON + NUMBER_MAX_ARCHONS; j++) { // looks really weird
+                if (rc.readSharedArray(j) == 0) { // check if spot is empty
+                    rc.writeSharedArray(j, locationEncoder(loc, encodeID(RobotID)));
+                    break;
+                }
+            }
+        }
 
         /*
          * Check if it was in the suspected list, and remove it if it is
@@ -396,8 +407,9 @@ public class FirstCommunication implements Communication {
         RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
         for (RobotInfo r : enemies) {
             if (r.getType() == RobotType.ARCHON) {
+                // found enemy archon!! Let others know!
                 addEnemyArchon(r.getLocation(), r.getID());
-                rc.setIndicatorString("FOUND ARCHON!");
+//                rc.setIndicatorString("FOUND ARCHON!");
             }
         }
     }
