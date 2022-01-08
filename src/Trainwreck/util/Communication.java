@@ -14,6 +14,22 @@ public interface Communication {
     boolean locationIsValid(MapLocation loc);
 
     /**
+     * Sets a global boolean variable.
+     *
+     * @param s    state to change
+     * @param bool boolean vlaue to assign to the status
+     */
+    void setState(Status s, boolean bool) throws GameActionException;
+
+    /**
+     * Gets a global boolean variable. Defaults to false if status type is not known.
+     *
+     * @param s state to request
+     * @return boolean value of that state.
+     */
+    boolean getState(Status s) throws GameActionException;
+
+    /**
      * Gets all the locations of friendly archons on the map.
      *
      * @return locations of friendly archons
@@ -101,6 +117,7 @@ public interface Communication {
 
     /**
      * Gets current unit count of specified archon and created type.
+     *
      * @param ArchonID ID of the archon which created the unit
      * @param type     of the unit
      * @return state of counter
@@ -109,13 +126,15 @@ public interface Communication {
 
     /**
      * Resets the unit counter for a particular archon and unit type.
+     *
      * @param ArchonID ID of the archon which created the unit
-     * @param type RobotType of the particular unit type
+     * @param type     RobotType of the particular unit type
      */
     void resetUnitCounter(int ArchonID, RobotType type) throws GameActionException;
 
     /**
      * Resets all the unit counters for a particular archon.
+     *
      * @param ArchonID ID of the archon which created the unit
      */
     void resetAllUnitCounters(int ArchonID) throws GameActionException;
