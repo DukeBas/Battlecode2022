@@ -1,6 +1,7 @@
 package Trainwreck.bots;
 
 import Trainwreck.util.Constants;
+import Trainwreck.util.Status;
 import battlecode.common.*;
 
 import java.util.Objects;
@@ -43,10 +44,10 @@ public class Archon extends Robot {
         comms.resetAllUnitCounters(ownID);
 
         // TESTING PURPOSES:
-        rc.setIndicatorString("Miners: " + numberOfMiners +
-                ", Sages: " + numberOfSages +
-                ", Soldiers:" + numberOfSoldiers +
-                ", Builders:" + numberOfBuilders);
+//        rc.setIndicatorString("Miners: " + numberOfMiners +
+//                ", Sages: " + numberOfSages +
+//                ", Soldiers:" + numberOfSoldiers +
+//                ", Builders:" + numberOfBuilders);
 
 
         //Pick a direction to build in.

@@ -100,17 +100,17 @@ public class FirstCommunication implements Communication {
         // read old value, so we do not overwrite unrelated parts
         int old = rc.readSharedArray(INDEX_STATE);
 
-        // write back to the same position, only changing the bit we need to change
+        // write back to the same array position, only changing the bit we need to change
         rc.writeSharedArray(INDEX_STATE, modifyBit(old, s.ordinal(), bool ? 1 : 0)); // write 0 or 1 depending on bool
     }
 
     @Override
     public boolean getState(Status s) throws GameActionException {
-        switch (s) {
-            default:
-                // we do not know what to do with this status!
-                return false;
-        }
+        int posInArrayCell = s.ordinal();
+        int arrayVal = rc.readSharedArray(INDEX_STATE);
+
+        // only look at the bit in the right position
+        return (arrayVal & modifyBit(0, posInArrayCell, 1)) > 0;
     }
 
     @Override
