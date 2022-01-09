@@ -1,10 +1,14 @@
 package Trainwreck.util;
 
+/**
+ * Enumeration to hold different things to use as State in the shared array.
+ * WARNING: DO NOT ADD BEYOND 16 ITEMS.
+ */
 public enum Status {
-    Unused1,
-    Unused2,
-    Unused3,
-    Unused4,
+    Archon1,
+    Archon2,
+    Archon3,
+    Archon4,
     Unused5,
     Unused6,
     Unused7,
@@ -18,3 +22,4 @@ public enum Status {
     Unused15,
     Unused16,
 }
+
