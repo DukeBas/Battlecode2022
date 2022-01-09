@@ -39,6 +39,29 @@ public class Archon extends Robot {
         // execute communication strategy
         communicationStrategy();
 
+        // execute unit building strategy
+        unitBuildingStrategy();
+
+        /*
+         * Check if we can still repair (and thus did not build)
+         */
+        if (rc.isActionReady()) {
+            //TODO...
+        }
+    }
+
+    /**
+     * Strategy for archon's unit building distribution.
+     * Current strategy is:
+     * Is an enemy within vision range? Build a soldier if we can!
+     * Else:
+     * do we have priority to build this turn?     (mechanism to ensure one archon does not spend all resources)
+     * OR
+     * do we currently have more than 150 lead?
+     * if so:
+     * Build either a miner or soldier, depending on how many units we have alive, map size, and turnCount
+     */
+    void unitBuildingStrategy() throws GameActionException {
         /*
          * Get number of units currently alive (or at least last turn). Reset counter to be accurate for next turn.
          */
@@ -49,15 +72,13 @@ public class Archon extends Robot {
         int numberOfBuilders = comms.getUnitCounter(ownID, RobotType.BUILDER);
         comms.resetAllUnitCounters(ownID);
 
-        // TESTING PURPOSES:
-//        rc.setIndicatorString("Miners: " + numberOfMiners +
-//                ", Sages: " + numberOfSages +
-//                ", Soldiers:" + numberOfSoldiers +
-//                ", Builders:" + numberOfBuilders);
+
+        // pick direction to build in
+        Direction dir = buildingDirection();
+
 
 
         //Pick a direction to build in.
-        Direction dir = Constants.directions[rng.nextInt(Constants.directions.length)];
         if (rng.nextBoolean()) {
             // Let's try to build a miner.
 //            rc.setIndicatorString("Trying to build a miner");
@@ -72,11 +93,41 @@ public class Archon extends Robot {
             }
         }
 
-        /*
-         * Pick direction to build in, prefer lighter terrain
-         */
-        rc.setIndicatorString(comms.getArchonOrder(rc.getID()) + "");
 
+        // TESTING PURPOSES:
+        rc.setIndicatorString("Miners: " + numberOfMiners +
+                ", Sages: " + numberOfSages +
+                ", Soldiers:" + numberOfSoldiers +
+                ", Builders:" + numberOfBuilders);
+    }
+
+    /**
+     * Determines a spot to build in. Prefers lighter terrain.
+     * Returns null if no spot is free.
+     *
+     * @return direction to build in
+     */
+    Direction buildingDirection() throws GameActionException {
+        Direction dir = null;
+        int lowestRubble = Integer.MAX_VALUE; // initialise with really high value
+        for (Direction d : Constants.directions) {
+            MapLocation loc = rc.getLocation().add(d); // add direction to current position
+
+            // if location is not on map, skip
+            if (!rc.onTheMap(loc)) continue;
+
+            if (!rc.isLocationOccupied(loc)){
+                // we can build here!
+                int rubbleHere = rc.senseRubble(loc);
+                if (rubbleHere < lowestRubble){
+                    // we found a spot with less rubble!
+                    lowestRubble = rubbleHere;
+                    dir = d;
+                }
+            }
+        }
+
+        return dir;
     }
 
 
@@ -136,8 +187,6 @@ public class Archon extends Robot {
     }
 
     /**
-     *
-     *
      * @param target location of potential enemy archon
      */
     private void addSymmetricLocation(MapLocation target) throws GameActionException {
