@@ -119,6 +119,23 @@ public class FirstCommunication implements Communication {
     }
 
     @Override
+    public int getNumberFriendlyArchons() throws GameActionException {
+
+        int number = 1; // at least one
+
+        for (int i = INDEX_START_FRIENDLY_ARCHON + 1; i < INDEX_START_FRIENDLY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
+            if (rc.readSharedArray(i) == 0) {
+                // we found an empty spot!
+                break;
+            } else {
+                 number++;
+            }
+        }
+
+        return number;
+    }
+
+    @Override
     public MapLocation[] getLocationsEnemyArchons() throws GameActionException {
         return getMapLocationsArchons(INDEX_START_ENEMY_ARCHON, NUMBER_MAX_ARCHONS);
     }
