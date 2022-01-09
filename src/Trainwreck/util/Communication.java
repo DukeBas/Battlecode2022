@@ -37,6 +37,13 @@ public interface Communication {
     MapLocation[] getLocationsFriendlyArchons() throws GameActionException;
 
     /**
+     * Gets the numbers of friendly archons (that were alive at the start of the match).
+     *
+     * @return number of friendly archons.
+     */
+    int getNumberFriendlyArchons() throws GameActionException;
+
+    /**
      * Gets all the locations of enemy archons on the map.
      * NOTE: Can give invalid locations indicating true location is unknown
      *
