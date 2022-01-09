@@ -114,6 +114,19 @@ public class FirstCommunication implements Communication {
     }
 
     @Override
+    public int getArchonOrder(int ArchonID) throws GameActionException {
+        for (int i = INDEX_START_FRIENDLY_ARCHON; i < INDEX_START_FRIENDLY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
+            if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(ArchonID)) {
+                // we found the requested ID!
+                return i - INDEX_START_FRIENDLY_ARCHON + 1;
+            }
+        }
+
+        // we did not find the requested archon ID
+        return 0;
+    }
+
+    @Override
     public MapLocation[] getLocationsFriendlyArchons() throws GameActionException {
         return getMapLocationsArchons(INDEX_START_FRIENDLY_ARCHON, NUMBER_MAX_ARCHONS);
     }
@@ -128,7 +141,7 @@ public class FirstCommunication implements Communication {
                 // we found an empty spot!
                 break;
             } else {
-                 number++;
+                number++;
             }
         }
 
@@ -603,7 +616,7 @@ public class FirstCommunication implements Communication {
      * @param input number to modify
      * @param pos   position in the number to modify (base 2)
      * @param setTo what to set the bit to, either 0 or 1
-     * @return
+     * @return input number with the requested bit modified
      */
     private int modifyBit(int input, int pos, int setTo) {
         int mask = 1 << pos;

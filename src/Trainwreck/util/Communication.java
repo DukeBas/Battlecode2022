@@ -30,6 +30,15 @@ public interface Communication {
     boolean getState(Status s) throws GameActionException;
 
     /**
+     * Returns at which place the archon with given ID gets to do it's turn, relative to the other archons.
+     * At least 1, at most 4. Returns 0 if archonID is unknown.
+     *
+     * @param ArchonID RobotID of archon in question
+     * @return at what place in the order they go
+     */
+    int getArchonOrder(int ArchonID) throws GameActionException;
+
+    /**
      * Gets all the locations of friendly archons on the map.
      *
      * @return locations of friendly archons
