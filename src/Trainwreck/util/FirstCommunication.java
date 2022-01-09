@@ -97,17 +97,16 @@ public class FirstCommunication implements Communication {
 
     @Override
     public void setState(Status s, boolean bool) throws GameActionException {
+        // read old value, so we do not overwrite unrelated parts
         int old = rc.readSharedArray(INDEX_STATE);
-        switch (s){
-            default:
-                // we do not know what to do with this status!
-                break;
-        }
+
+        // write back to the same position, only changing the bit we need to change
+        rc.writeSharedArray(INDEX_STATE, modifyBit(old, s.ordinal(), bool ? 1 : 0)); // write 0 or 1 depending on bool
     }
 
     @Override
     public boolean getState(Status s) throws GameActionException {
-        switch (s){
+        switch (s) {
             default:
                 // we do not know what to do with this status!
                 return false;
@@ -577,5 +576,21 @@ public class FirstCommunication implements Communication {
 
     private int encodeID(int RobotID) {
         return RobotID % 14 + 1; //TODO: better mapping than modulo, use a space in the array
+    }
+
+
+    /**
+     * Function to modify a bit of a number.
+     * Adapted from: https://www.geeksforgeeks.org/modify-bit-given-position/
+     *
+     * @param input number to modify
+     * @param pos   position in the number to modify (base 2)
+     * @param setTo what to set the bit to, either 0 or 1
+     * @return
+     */
+    private int modifyBit(int input, int pos, int setTo) {
+        int mask = 1 << pos;
+        return (input & ~mask) |
+                ((setTo << pos) & mask);
     }
 }
