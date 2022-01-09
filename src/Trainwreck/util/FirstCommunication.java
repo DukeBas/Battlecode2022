@@ -53,6 +53,7 @@ import java.util.ArrayList;
  * We use the first 6 bits for x, next 6 for y, and last 4 for extra information for encoding locations.
  */
 public class FirstCommunication implements Communication {
+    private final static int INDEX_STATE = 1;
     private final static int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
     private final static int INDEX_START_ENEMY_ARCHON = 4; // 4,5,6,7
     private final static int INDEX_START_COUNTERS = 12; // uses 2 per archon, so 12,13,14,15,16,17,18,19
@@ -92,6 +93,24 @@ public class FirstCommunication implements Communication {
     @Override
     public boolean locationIsValid(MapLocation loc) {
         return loc.x >= 0 && loc.y >= 0 && loc.x < mapWidth && loc.y < mapHeight;
+    }
+
+    @Override
+    public void setState(Status s, boolean bool) throws GameActionException {
+        // read old value, so we do not overwrite unrelated parts
+        int old = rc.readSharedArray(INDEX_STATE);
+
+        // write back to the same array position, only changing the bit we need to change
+        rc.writeSharedArray(INDEX_STATE, modifyBit(old, s.ordinal(), bool ? 1 : 0)); // write 0 or 1 depending on bool
+    }
+
+    @Override
+    public boolean getState(Status s) throws GameActionException {
+        int posInArrayCell = s.ordinal();
+        int arrayVal = rc.readSharedArray(INDEX_STATE);
+
+        // only look at the bit in the right position
+        return (arrayVal & modifyBit(0, posInArrayCell, 1)) > 0;
     }
 
     @Override
@@ -557,5 +576,21 @@ public class FirstCommunication implements Communication {
 
     private int encodeID(int RobotID) {
         return RobotID % 14 + 1; //TODO: better mapping than modulo, use a space in the array
+    }
+
+
+    /**
+     * Function to modify a bit of a number.
+     * Adapted from: https://www.geeksforgeeks.org/modify-bit-given-position/
+     *
+     * @param input number to modify
+     * @param pos   position in the number to modify (base 2)
+     * @param setTo what to set the bit to, either 0 or 1
+     * @return
+     */
+    private int modifyBit(int input, int pos, int setTo) {
+        int mask = 1 << pos;
+        return (input & ~mask) |
+                ((setTo << pos) & mask);
     }
 }
