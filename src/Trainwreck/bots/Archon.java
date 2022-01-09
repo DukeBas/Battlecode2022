@@ -75,7 +75,7 @@ public class Archon extends Robot {
         /*
          * Pick direction to build in, prefer lighter terrain
          */
-
+        rc.setIndicatorString(comms.getArchonOrder(rc.getID()) + "");
 
     }
 
