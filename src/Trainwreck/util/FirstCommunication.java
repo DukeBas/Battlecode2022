@@ -158,7 +158,8 @@ public class FirstCommunication implements Communication {
     private MapLocation[] getMapLocationsArchons(int index_start_archons, int length) throws GameActionException {
         ArrayList<Integer> indices = new ArrayList<>();
         for (int i = index_start_archons; i < index_start_archons + length; i++) {
-            if (rc.readSharedArray(i) != 0) {
+            int val = rc.readSharedArray(i);
+            if (rc.readSharedArray(i) != 0 && locationIsValid(locationDecoder(val))) {
                 indices.add(i);
             }
         }
@@ -189,7 +190,7 @@ public class FirstCommunication implements Communication {
         for (MapLocation loc : archonLocations) {
             out.append(loc.toString()).append(" ");
         }
-        rc.setIndicatorString(out.toString());
+        rc.setIndicatorString("index " + index_start_archons + " " + out.toString());
 
         MapLocation closestArchon = archonLocations[0];
         int closestDistance = myLoc.distanceSquaredTo(closestArchon);
