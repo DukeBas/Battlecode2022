@@ -27,6 +27,11 @@ public class Archon extends Robot {
      */
     private final int turnOrder;
 
+    /**
+     * Max number of miners that one archon should make.
+     */
+    private static final int ARCHON_LOW_MINER_LIMIT = 10;
+    private static final int ARCHON_HIGH_MINER_LIMIT = 15;
 
     public Archon(RobotController rc) throws GameActionException {
         super(rc);
@@ -134,11 +139,11 @@ public class Archon extends Robot {
 
                 rc.setIndicatorString(priority + " " + rc.getTeamLeadAmount(friendly));
 
-                int minersNeeded = 10 + (int) Math.log(turnCount);
+                int minersNeeded = ARCHON_LOW_MINER_LIMIT;
                 int nearbyLead = rc.senseNearbyLocationsWithLead(visionRadiusSquared).length;
                 if (nearbyLead > minersNeeded * 4) {
                     // Lots of lead available! Get more miners!
-                    minersNeeded = nearbyLead / 4;
+                    minersNeeded = ARCHON_HIGH_MINER_LIMIT;
                 }
 
                 // Strategy beyond depends on how far we are in the game.
