@@ -200,6 +200,10 @@ public class Archon extends Robot {
 
         }
 
+
+        /*
+         * Check if we can start sending soldiers to the enemy
+         */
         if (numberOfSoldiers > SOLDIER_BATCH_SIZE) {
             comms.setState(Status.ATTACK_SIGNAL, true);
         }
