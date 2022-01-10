@@ -303,26 +303,25 @@ public class Archon extends Robot {
         if (rc.canSenseLocation(target)) {
             // it is in range!
             RobotInfo robotAtLocation = rc.senseRobotAtLocation(target);
-            if (Objects.nonNull(robotAtLocation)) {
-                // there's a robot here!
-                if (robotAtLocation.team.equals(enemy)) {
-                    // enemy spotted! Record it!
-                    comms.addEnemyArchon(target, robotAtLocation.ID);
-                } else {
-                    // it's friendly! Disproven!
-                    return;
-                }
-            } else {
-                // no robot in sight! Disproven!
+            if (robotAtLocation == null) {
+                // No robot here! Disproven!
                 return;
             }
+            // There's a robot here!
+            if (robotAtLocation.team.equals(enemy)) {
+                // enemy spotted! Record it!
+                comms.addEnemyArchon(target, robotAtLocation.ID);
+            }
+            // Either enemy location recorded or it was friendly! Disproven!
+            return;
         }
 
         /*
          * Check if location is covered by a friendly archon already.
          */
         MapLocation[] friendlyArchons = comms.getLocationsFriendlyArchons();
-        for (MapLocation loc : friendlyArchons) { // check all known friendly archons
+        for (
+                MapLocation loc : friendlyArchons) { // check all known friendly archons
             if (target.equals(loc)) {
                 // We found a friendly archon on that position! Disproven!
                 return;
