@@ -54,29 +54,27 @@ public class Miner extends Robot {
                 }
             }
         } else {
-            // start by looking at locations with lead in our action radius
-            MapLocation[] mineableLead = rc.senseNearbyLocationsWithLead(this.actionRadiusSquared);
+            // start by looking at locations with more than 1 lead in our action radius
+            MapLocation[] mineableLead = rc.senseNearbyLocationsWithLead(this.actionRadiusSquared, 2);
             for (MapLocation loc : mineableLead) {
                 int lead = rc.senseLead(loc);
-                if (lead > 1) { // can't go over maximum number yet, so unchecked
-                    LocationWithResources lwr = new LocationWithResources(loc, lead, 0);
-                    ResourceLocations.add(lwr);
-                    // we do not need to check if we can mine the resource, we always can
-                    MineableLocations.add(lwr);
-                }
+                // can't go over maximum number yet, so unchecked
+                LocationWithResources lwr = new LocationWithResources(loc, lead, 0);
+                ResourceLocations.add(lwr);
+                // we do not need to check if we can mine the resource, we always can
+                MineableLocations.add(lwr);
             }
 
-            // no lead currently mineable, look beyond action range.
-            MapLocation[] nearbyLead = rc.senseNearbyLocationsWithLead(this.visionRadiusSquared);
+            // no lead currently mineable, look beyond action range. Only consider tiles with more than 1 lead.
+            MapLocation[] nearbyLead = rc.senseNearbyLocationsWithLead(this.visionRadiusSquared, 2);
             for (MapLocation loc : nearbyLead) {
                 if (ResourceLocations.size() >= MAX_RESOURCE_LOCATIONS) {
                     break; // prevent any more locations from being added.
                 }
                 int lead = rc.senseLead(loc);
-                if (lead > 1) {
-                    ResourceLocations.add(new LocationWithResources(loc, lead, 0));
-                    // we do not need to check if we can mine the resource, always impossible
-                }
+                ResourceLocations.add(new LocationWithResources(loc, lead, 0));
+                // we do not need to check if we can mine the resource, always impossible
+
             }
         }
         /*
