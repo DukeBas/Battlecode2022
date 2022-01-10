@@ -10,11 +10,10 @@ import battlecode.common.RobotController;
  * without blocking tiles where archon can build.
  */
 public class SpotNearArchonPathfinding implements Pathfinding {
-    private final int ARCHON_RANGE = 25; // in what R^2 of the archon should we stay?
 
     @Override
     public Direction getDirection(MapLocation source, MapLocation target, RobotController rc) throws GameActionException {
-        MapLocation targetSpot = null; // where we want to go to
+        MapLocation targetSpot = source; // where we want to go to, initialise as current spot
         int leastRubble = Integer.MAX_VALUE;
 
         /*
@@ -25,24 +24,35 @@ public class SpotNearArchonPathfinding implements Pathfinding {
                 MapLocation loc = source.translate(dx, dy);
 
                 // is the location valid?
-                if (rc.onTheMap(loc))
+                if (!rc.onTheMap(loc) || // is it on the map?
+                        !rc.canSenseLocation(loc) || // can we sense the rubble there?
+                        !locationInArchonRange(target, loc) || // is it in range of the archon?
+                        blockingArchon(target, loc) || // is it blocking the archon?
+                        rc.isLocationOccupied(loc)) // is the location already occupied?
+                {
+                    // location is not valid!
+                    continue; // skip to the next one
+                }
+
+                // is the location better?
+                int rubble = rc.senseRubble(loc);
+                if (rubble < leastRubble) {
+                    // new better spot found!
+                    targetSpot = loc;
+                    leastRubble = rubble;
+                }
             }
         }
 
+//        rc.setIndicatorString(targetSpot + " " + blockingArchon(target, source) + " "+
+//                        !rc.canSenseLocation(loc) + " " +
+//                        !locationInArchonRange(target, source) + " " +
+//                !rc.onTheMap(targetSpot) + " " +
+//                !rc.onTheMap(targetSpot) + " " +
+//                );
 
-
-
-
-
-        /*
-         * We must move if we are blocking the archon, else only move if beneficial
-         */
-        if (source.distanceSquaredTo(target) <= 2) {
-            // we are blocking the archon spawns!
-        }
-
-
-        return null;
+        Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
+        return pathfinder.getDirection(source, targetSpot, rc);
     }
 
     /**
@@ -50,11 +60,10 @@ public class SpotNearArchonPathfinding implements Pathfinding {
      *
      * @param archon location of the archon
      * @param loc    to check
-     * @param range  to compare to
      * @return whether the location is in the specified range of the archon
      */
-    private boolean locationInArchonRange(MapLocation archon, MapLocation loc, int range) {
-        return (archon.distanceSquaredTo(loc) <= range);
+    private boolean locationInArchonRange(MapLocation archon, MapLocation loc) {
+        return (archon.distanceSquaredTo(loc) <= 25); // in what R^2 of the archon should we stay?
     }
 
     /**

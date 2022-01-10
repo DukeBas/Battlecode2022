@@ -172,7 +172,7 @@ public class FirstCommunication implements Communication {
     }
 
     @Override
-    public MapLocation getLocationsClosestFriendlyArchon() throws GameActionException {
+    public MapLocation getLocationClosestFriendlyArchon() throws GameActionException {
         return getClosestArchon(INDEX_START_FRIENDLY_ARCHON);
     }
 

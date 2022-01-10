@@ -76,30 +76,43 @@ public class Soldier extends Robot {
 
 
         /*
-         * Move to enemy if one is in vision range. Preferring target of attack.
+         * Move based on if attack signal is true
          */
         Direction dir;
-        if (nearbyEnemies.length > 0) {
-            // move towards an enemy.
-            Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
-            if (toAttack != null) { // prefer the enemy we are attacking currently
-                dir = pathfinder.getDirection(myLocation, toAttack, rc);
+        if (comms.getState(Status.ATTACK_SIGNAL)) {
+            // Go to attack!!!
+
+            /*
+             * Move to enemy if one is in vision range. Preferring target of attack.
+             */
+            if (nearbyEnemies.length > 0) {
+                // move towards an enemy.
+                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
+                if (toAttack != null) { // prefer the enemy we are attacking currently
+                    dir = pathfinder.getDirection(myLocation, toAttack, rc);
+                } else {
+                    dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
+                }
             } else {
-                dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
+                /*
+                 * If we have a target location, travel towards it
+                 */
+                if (targetArchonLocation != null) {
+                    Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
+                    dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
+                } else {
+                    // move semi randomly
+                    Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
+                    dir = pathfinder.getDirection(myLocation, myLocation, rc);
+                }
             }
         } else {
-            /*
-             * If we have a target location, travel towards it
-             */
-            if (comms.getState(Status.ATTACK_SIGNAL) && targetArchonLocation != null) {
-                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
-                dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
-            } else {
-                // move semi randomly
-                Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
-                dir = pathfinder.getDirection(myLocation, myLocation, rc);
-            }
+            // Wait till attack signal!
+            Pathfinding pathfinder = new SpotNearArchonPathfinding();
+            dir = pathfinder.getDirection(myLocation, comms.getLocationClosestFriendlyArchon(), rc);
         }
+
+//        rc.setIndicatorString(comms.getState(Status.ATTACK_SIGNAL) + " " + dir);
 
 //        rc.setIndicatorString("cur: " + targetArchonLocation + " close " + comms.getLocationClosestEnemyArchon());
 

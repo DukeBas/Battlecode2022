@@ -153,7 +153,7 @@ public abstract class Robot {
                 System.out.println(ownType + " GameAction-Exception");
                 e.printStackTrace();
 
-                rc.setIndicatorString("GameActionException: " + e);
+                rc.setIndicatorString("G-E: " + e);
             } catch (Exception e) {
                 // Oh no! It looks like our code tried to do something bad. This isn't a
                 // GameActionException, so it's more likely to be a bug in our code.

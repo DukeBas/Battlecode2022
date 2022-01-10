@@ -61,11 +61,11 @@ public interface Communication {
     MapLocation[] getLocationsEnemyArchons() throws GameActionException;
 
     /**
-     * Gets the locations of the closest friendly archon.
+     * Gets the location of the closest friendly archon.
      *
      * @return location of nearest friendly archon
      */
-    MapLocation getLocationsClosestFriendlyArchon() throws GameActionException;
+    MapLocation getLocationClosestFriendlyArchon() throws GameActionException;
 
     /**
      * Gets the locations of the closest enemy archon, returns Null if none are currently known.
