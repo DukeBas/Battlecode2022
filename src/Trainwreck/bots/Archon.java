@@ -6,6 +6,8 @@ import battlecode.common.*;
 
 import java.util.Objects;
 
+import static Trainwreck.util.Helper.isCombatUnit;
+
 
 public class Archon extends Robot {
 
@@ -15,8 +17,22 @@ public class Archon extends Robot {
     private final int mapWidth;
     private final int mapHeight;
 
+    /**
+     * RobotID of this archon
+     */
+    private final int ownID;
+
+    /**
+     * Variable to keep track of which archon acts before others.
+     */
+    private final int turnOrder;
+
+
     public Archon(RobotController rc) throws GameActionException {
         super(rc);
+
+        // get our own ID
+        ownID = rc.getID();
 
         // code specific to this robot's initialisation
         this.mapWidth = rc.getMapWidth();
@@ -27,6 +43,9 @@ public class Archon extends Robot {
          * based on symmetries and other friendly bases.
          */
         comms.addFriendlyArchon();
+
+        // get when in the order we act
+        turnOrder = comms.getArchonOrder(ownID);
     }
 
     /**
@@ -53,52 +72,120 @@ public class Archon extends Robot {
     /**
      * Strategy for archon's unit building distribution.
      * Current strategy is:
-     * Is an enemy within vision range? Build a soldier if we can!
+     * Is an enemy combat unit within vision range? Build a soldier if we can!
      * Else:
-     * do we have priority to build this turn?     (mechanism to ensure one archon does not spend all resources)
-     * OR
-     * do we currently have more than 150 lead?
-     * if so:
-     * Build either a miner or soldier, depending on how many units we have alive, map size, and turnCount
+     * * do we have priority to build this turn?     (mechanism to ensure one archon does not spend all resources)
+     * * OR
+     * * do we currently have more than 150 lead?
+     * * if so:
+     * * * Build either a miner or soldier, depending on how many units we have, lead in the area and the turnCount.
+     * <p>
+     * <p>
+     * FUTURE: depend on on how many units we have alive,map size, no. archons and turnCount for finer control.
      */
     void unitBuildingStrategy() throws GameActionException {
         /*
          * Get number of units currently alive (or at least last turn). Reset counter to be accurate for next turn.
          */
-        int ownID = rc.getID();
         int numberOfMiners = comms.getUnitCounter(ownID, RobotType.MINER);
-        int numberOfSages = comms.getUnitCounter(ownID, RobotType.SAGE);
-        int numberOfSoldiers = comms.getUnitCounter(ownID, RobotType.SOLDIER);
-        int numberOfBuilders = comms.getUnitCounter(ownID, RobotType.BUILDER);
+////        int numberOfSages = comms.getUnitCounter(ownID, RobotType.SAGE);
+////        int numberOfSoldiers = comms.getUnitCounter(ownID, RobotType.SOLDIER);
+////      int numberOfBuilders = comms.getUnitCounter(ownID, RobotType.BUILDER);
         comms.resetAllUnitCounters(ownID);
 
 
         // pick direction to build in
         Direction dir = buildingDirection();
 
-
-
-        //Pick a direction to build in.
-        if (rng.nextBoolean()) {
-            // Let's try to build a miner.
-//            rc.setIndicatorString("Trying to build a miner");
-            if (rc.canBuildRobot(RobotType.MINER, dir)) {
-                rc.buildRobot(RobotType.MINER, dir);
+        if (dir != null) { // there is room to build!
+            /*
+             * Check if there is an enemy combat unit in range
+             */
+            boolean enemyInRange = false;
+            RobotInfo[] enemiesInRange = rc.senseNearbyRobots(visionRadiusSquared, enemy);
+            for (RobotInfo bot : enemiesInRange) {
+                if (isCombatUnit(bot.getType())) {
+                    // Enemy combat unit in range!!!
+                    enemyInRange = true;
+                    break;
+                }
             }
-        } else {
-            // Let's try to build a soldier.
-//            rc.setIndicatorString("Trying to build a soldier");
-            if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
-                rc.buildRobot(RobotType.SOLDIER, dir);
+
+            if (enemyInRange) {
+                // There was an enemy in range! Build a soldier if we can!
+                if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
+                    rc.buildRobot(RobotType.SOLDIER, dir);
+                }
+                return;
             }
+
+            // No enemy combatants in range. Do we have priority to build this turn? Or do we have many resources?
+            boolean priority = priorityCheck();
+            if (priority || rc.getTeamLeadAmount(friendly) >= 150) { // we can build!
+
+                rc.setIndicatorString(priority + " " + rc.getTeamLeadAmount(friendly));
+
+                int minersNeeded = 10 + (int) Math.log(turnCount);
+                int nearbyLead = rc.senseNearbyLocationsWithLead(visionRadiusSquared).length;
+                if (nearbyLead > minersNeeded * 4) {
+                    // Lots of lead available! Get more miners!
+                    minersNeeded = nearbyLead / 4;
+                }
+
+                // Strategy beyond depends on how far we are in the game.
+                if (turnCount < 100) {
+                    /*
+                     * Early game strategy, prioritise miners
+                     */
+                    // do we need more miners?
+                    if (numberOfMiners < minersNeeded) {
+                        // We need more miners! Try to build one!
+                        if (rc.canBuildRobot(RobotType.MINER, dir)) {
+                            rc.buildRobot(RobotType.MINER, dir);
+                        }
+
+                    } else {
+                        // We have enough miners! Let's make some soldiers!
+                        if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
+                            rc.buildRobot(RobotType.SOLDIER, dir);
+                        }
+                    }
+                } else {
+                    /*
+                     * Late(r) game strategy. Mainly build soldiers, replenish miners every now and then.
+                     */
+
+                    RobotType toBuild = RobotType.SOLDIER; // default
+
+                    // do we need more miners? If so, higher chance to make one
+                    if (numberOfMiners < minersNeeded) {
+                        // only sometimes build the miner
+                        if (Math.random() < 0.10) {
+                            toBuild = RobotType.MINER;
+                        }
+                    } else {
+                        // we do not need miners, we might still want another one!
+                        if (Math.random() < 0.01) {
+                            toBuild = RobotType.MINER;
+                        }
+                    }
+
+                    // build the desired robot if we can
+                    if (rc.canBuildRobot(toBuild, dir)) {
+                        rc.buildRobot(toBuild, dir);
+                    }
+
+                }
+            }
+
         }
 
 
-        // TESTING PURPOSES:
-        rc.setIndicatorString("Miners: " + numberOfMiners +
-                ", Sages: " + numberOfSages +
-                ", Soldiers:" + numberOfSoldiers +
-                ", Builders:" + numberOfBuilders);
+//        // TESTING PURPOSES:
+//        rc.setIndicatorString("Miners: " + numberOfMiners +
+//                ", Sages: " + numberOfSages +
+//                ", Soldiers:" + numberOfSoldiers +
+//                ", Builders:" + numberOfBuilders);
     }
 
     /**
@@ -107,7 +194,7 @@ public class Archon extends Robot {
      *
      * @return direction to build in
      */
-    Direction buildingDirection() throws GameActionException {
+    private Direction buildingDirection() throws GameActionException {
         Direction dir = null;
         int lowestRubble = Integer.MAX_VALUE; // initialise with really high value
         for (Direction d : Constants.directions) {
@@ -116,10 +203,10 @@ public class Archon extends Robot {
             // if location is not on map, skip
             if (!rc.onTheMap(loc)) continue;
 
-            if (!rc.isLocationOccupied(loc)){
+            if (!rc.isLocationOccupied(loc)) {
                 // we can build here!
                 int rubbleHere = rc.senseRubble(loc);
-                if (rubbleHere < lowestRubble){
+                if (rubbleHere < lowestRubble) {
                     // we found a spot with less rubble!
                     lowestRubble = rubbleHere;
                     dir = d;
@@ -128,6 +215,17 @@ public class Archon extends Robot {
         }
 
         return dir;
+    }
+
+
+    /**
+     * Checks whether this archon has priority this turn.
+     *
+     * @return whether this archon has priority now.
+     */
+    private boolean priorityCheck() throws GameActionException {
+        final int totalFriendlyArchons = comms.getNumberFriendlyArchons();
+        return turnCount % totalFriendlyArchons == turnOrder; // priority rotates evenly
     }
 
 
