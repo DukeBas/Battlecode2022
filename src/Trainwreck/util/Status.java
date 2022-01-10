@@ -5,10 +5,10 @@ package Trainwreck.util;
  * WARNING: DO NOT ADD BEYOND 16 ITEMS.
  */
 public enum Status {
-    Archon1,
-    Archon2,
-    Archon3,
-    Archon4,
+    ATTACK_SIGNAL,
+    Unused2,
+    Unused3,
+    Unused4,
     Unused5,
     Unused6,
     Unused7,
