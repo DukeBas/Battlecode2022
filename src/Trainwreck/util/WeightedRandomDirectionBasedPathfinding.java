@@ -16,7 +16,8 @@ public class WeightedRandomDirectionBasedPathfinding implements Pathfinding {
     private double preferenceStrength = 20; // Higher means less rubble is preferred even more.
 
     @Override
-    public Direction getDirection(MapLocation source, MapLocation target, RobotController rc) {
+    public Direction getDirection(MapLocation source, MapLocation target, RobotController rc)
+            throws GameActionException {
         /*
          * Prepare weighted directions
          */
@@ -46,21 +47,19 @@ public class WeightedRandomDirectionBasedPathfinding implements Pathfinding {
 
     private double addOption(MapLocation source, RobotController rc,
                              List<RandomPreferLessRubblePathfinding.WeightedDirection> availableSpots,
-                             Direction dir) {
+                             Direction dir) throws GameActionException {
         MapLocation loc = new MapLocation(source.x, source.y).add(dir);
         double weight = 0;
-        try {
-            if (!rc.isLocationOccupied(loc)) {
-                // Location is open! Add it as an option! How much rubble is there?
-                int rubble = rc.senseRubble(loc);
 
-                // Determine weight based on action/movement cooldown formula inverse
-                weight = 10.0 / (rubble * preferenceStrength + 10);
-                availableSpots.add(new RandomPreferLessRubblePathfinding.WeightedDirection(dir, weight));
-            }
-        } catch (GameActionException e) {
-            e.printStackTrace();
+        if (!rc.isLocationOccupied(loc)) {
+            // Location is open! Add it as an option! How much rubble is there?
+            int rubble = rc.senseRubble(loc);
+
+            // Determine weight based on action/movement cooldown formula inverse
+            weight = 10.0 / (rubble * preferenceStrength + 10);
+            availableSpots.add(new RandomPreferLessRubblePathfinding.WeightedDirection(dir, weight));
         }
+
         return weight;
     }
 }

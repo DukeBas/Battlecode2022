@@ -17,27 +17,26 @@ public class RandomPreferLessRubblePathfinding implements Pathfinding {
     }
 
     @Override
-    public Direction getDirection(final MapLocation source, final MapLocation target, RobotController rc) {
+    public Direction getDirection(final MapLocation source, final MapLocation target, RobotController rc)
+            throws GameActionException {
         MapLocation myLocation = rc.getLocation();
         ArrayList<WeightedDirection> options = new ArrayList<>();
         double totalWeight = 0;
 
-        try { // rc.onTheMap throws a game exception if checked location is outside of vision, should never be the case
-            for (Direction d : Constants.directions) {
-                MapLocation loc = new MapLocation(myLocation.x, myLocation.y).add(d); // from a new location object
-                if (rc.onTheMap(loc)) {
-                    // location is on the map! How much rubble is there?
-                    int rubble = rc.senseRubble(loc);
 
-                    // Determine weight based on action/movement cooldown formula inverse
-                    double weight = 10.0 / (rubble * preferenceStrength + 10);
-                    options.add(new WeightedDirection(d, weight));
-                    totalWeight += weight;
-                }
+        for (Direction d : Constants.directions) {
+            MapLocation loc = new MapLocation(myLocation.x, myLocation.y).add(d); // from a new location object
+            if (rc.onTheMap(loc)) {
+                // location is on the map! How much rubble is there?
+                int rubble = rc.senseRubble(loc);
+
+                // Determine weight based on action/movement cooldown formula inverse
+                double weight = 10.0 / (rubble * preferenceStrength + 10);
+                options.add(new WeightedDirection(d, weight));
+                totalWeight += weight;
             }
-        } catch (Exception e) {
-            System.out.println("RandomPreferLessRubblePathfinding: checked location not in vision! " + e);
         }
+
 
         return pickRandomWeightedDirection(options, totalWeight);
     }
