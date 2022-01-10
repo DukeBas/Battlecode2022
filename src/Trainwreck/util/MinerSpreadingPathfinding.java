@@ -10,6 +10,7 @@ import static Trainwreck.util.Helper.isCombatUnit;
  */
 public class MinerSpreadingPathfinding implements Pathfinding {
     private static final int RANGE_TO_CONSIDER_FRIENDLIES = 10;
+    private static final int RANGE_CLOSE_TO_CENTER = 15;
 
     @Override
     public Direction getDirection(MapLocation source, MapLocation target, RobotController rc) {
@@ -49,10 +50,12 @@ public class MinerSpreadingPathfinding implements Pathfinding {
         RobotInfo closestMiner = null;
         int distClosestMiner = Integer.MAX_VALUE;
         for (RobotInfo bot : nearbyFriendlies) {
-            int dist = myLoc.distanceSquaredTo(bot.location);
-            if (dist < distClosestMiner) { // we found a new closest miner!
-                closestMiner = bot;
-                distClosestMiner = dist;
+            if (bot.type == RobotType.MINER) {
+                int dist = myLoc.distanceSquaredTo(bot.location);
+                if (dist < distClosestMiner) { // we found a new closest miner!
+                    closestMiner = bot;
+                    distClosestMiner = dist;
+                }
             }
         }
 
@@ -79,17 +82,24 @@ public class MinerSpreadingPathfinding implements Pathfinding {
         }
 
         /*
-         * No other friendly units in range, use other pathfinding technique
+         * No other friendly units in range, use other pathfinding technique.
+         * Tend towards center of the map, to hopefully find resources along the way
          */
-        Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
-        return pathfinder.getDirection(myLoc, myLoc, rc);
+        MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+        int distanceToCenter = myLoc.distanceSquaredTo(center);
+        if (distanceToCenter > 18 && Math.random() < 0.2) {// Let's go towards the center!
+            Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
+            return pathfinder.getDirection(myLoc, center, rc);
+        } else {
+            Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
+            return pathfinder.getDirection(myLoc, myLoc, rc);
+        }
     }
 
     /**
      * Returns the best way to run away from target direction. Considers rubble.
      *
-     * @param toTarget
-     * @return
+     * @param toTarget direction to target to get the best opposite of.
      */
     private Direction bestOpposite(RobotController rc, Direction toTarget) throws GameActionException {
 
