@@ -1,6 +1,7 @@
 package Trainwreck.bots;
 
 import Trainwreck.util.Communication;
+import Trainwreck.util.Constants;
 import Trainwreck.util.FirstCommunication;
 import battlecode.common.*;
 
@@ -198,6 +199,37 @@ public abstract class Robot {
         if (isDroid(ownType)) {
             increaseUnitCounter();
         }
+    }
+
+    /**
+     * Determines a spot to build in. Prefers lighter terrain.
+     * Returns null if no spot is free.
+     *
+     * @return direction to build in
+     */
+    protected final Direction buildingDirection() throws GameActionException {
+        Direction dir = null;
+        int lowestRubble = Integer.MAX_VALUE; // initialise with really high value
+        for (Direction d : Constants.directions) {
+            MapLocation loc = rc.getLocation().add(d); // add direction to current position
+
+            // if location is not on map, skip
+            if (!rc.onTheMap(loc)) continue;
+
+            // TODO: isLocationOccupied() costs more than canBuildRobot(),
+            // could optimize
+            if (!rc.isLocationOccupied(loc)) {
+                // we can build here!
+                int rubbleHere = rc.senseRubble(loc);
+                if (rubbleHere < lowestRubble) {
+                    // we found a spot with less rubble!
+                    lowestRubble = rubbleHere;
+                    dir = d;
+                }
+            }
+        }
+
+        return dir;
     }
 
     private void increaseUnitCounter() throws GameActionException {
