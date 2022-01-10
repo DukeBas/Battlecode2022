@@ -3,9 +3,6 @@ package Trainwreck.bots;
 import Trainwreck.util.*;
 import battlecode.common.*;
 
-import java.util.Collections;
-import java.util.Objects;
-
 import static Trainwreck.util.Helper.isCombatUnit;
 
 public class Soldier extends Robot {
@@ -94,7 +91,7 @@ public class Soldier extends Robot {
             /*
              * If we have a target location, travel towards it
              */
-            if (targetArchonLocation != null) {
+            if (comms.getState(Status.ATTACK_SIGNAL) && targetArchonLocation != null) {
                 Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
                 dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
             } else {
