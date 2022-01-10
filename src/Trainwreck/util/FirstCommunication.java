@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * The following division of the shared memory is used
  * +────────────────────────────────────+────────────────────────────────────+────────────────────────────────────+────────────────────────────────────+
  * | Index 0                            | Index 1                            | Index 2                            | Index 3                            |
- * | Mapping?                           | Status booleans first 8 bits,      | .                                  | .                                  |
+ * | Mapping?                           | Status booleans first 8 bits,      | Enemy counter                      | .                                  |
  * |                                    | last 8 bits for counting no.       |                                    |                                    |
  * |                                    | potential enemy archon locations   |                                    |                                    |
  * |                                    |                                    |                                    |                                    |
@@ -53,13 +53,15 @@ import java.util.ArrayList;
  * We use the first 6 bits for x, next 6 for y, and last 4 for extra information for encoding locations.
  */
 public class FirstCommunication implements Communication {
-    private final static int INDEX_STATE = 1;
+    private final static int NUMBER_MAX_ARCHONS = 4;
+
+    private final static int INDEX_STATE = 1; // 1
     private final static int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
     private final static int INDEX_START_ENEMY_ARCHON = 4; // 4,5,6,7
     private final static int INDEX_START_COUNTERS = 12; // uses 2 per archon, so 12,13,14,15,16,17,18,19
-    private final static int INDEX_STATUS_BOOLS_ENEMY_COUNTER = 1;
-    private final static int INDEX_START_POTENTIAL_ENEMY_ARRAY = 20;
-    private final static int NUMBER_MAX_ARCHONS = 4;
+    private final static int INDEX_STATUS_BOOLS_ENEMY_COUNTER = 2; // 2
+    private final static int INDEX_START_POTENTIAL_ENEMY_ARRAY = 20; // 20 onwards
+
 
     /**
      * RobotController of the unit this object belongs to.
@@ -538,6 +540,8 @@ public class FirstCommunication implements Communication {
 
         MapLocation[] archonLocations = getMapLocationsArchons(INDEX_START_POTENTIAL_ENEMY_ARRAY,
                 getPotentialEnemyArchonCounter());
+
+        rc.setIndicatorString("pot len: " + getPotentialEnemyArchonCounter() + " arrlen: " + archonLocations.length);
 
 //        rc.setIndicatorString("pot arr length: "+ archonLocations.length + " while " + getPotentialEnemyArchonCounter());
 //        rc.setIndicatorString(rc.readSharedArray(INDEX_START_POTENTIAL_ENEMY_ARRAY) + " " + INDEX_START_POTENTIAL_ENEMY_ARRAY + 1);

@@ -160,7 +160,7 @@ public abstract class Robot {
                 System.out.println(ownType + " Generic-Exception");
                 e.printStackTrace();
 
-                rc.setIndicatorString("Exception: " + e);
+                rc.setIndicatorString(e.getStackTrace()[0].getMethodName() + " : "+ e);
             } finally {
                 // Signify we've done everything we want to do, thereby ending our turn.
                 // This will make our code wait until the next turn, and then perform this loop again.
