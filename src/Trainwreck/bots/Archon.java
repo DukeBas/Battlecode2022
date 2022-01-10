@@ -65,7 +65,16 @@ public class Archon extends Robot {
          * Check if we can still repair (and thus did not build)
          */
         if (rc.isActionReady()) {
-            //TODO...
+            // we can still repair!
+            RobotInfo[] friendlies = rc.senseNearbyRobots(actionRadiusSquared, friendly);
+            for (RobotInfo bot : friendlies) {
+                if (bot.health < bot.type.health) {
+                    // damaged friendly bot found!
+                    if (rc.canRepair(bot.location)) {
+                        rc.repair(bot.location);
+                    }
+                }
+            }
         }
     }
 
