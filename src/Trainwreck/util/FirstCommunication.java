@@ -118,12 +118,12 @@ public class FirstCommunication implements Communication {
         for (int i = INDEX_START_FRIENDLY_ARCHON; i < INDEX_START_FRIENDLY_ARCHON + NUMBER_MAX_ARCHONS; i++) {
             if (locationExtraDecoder(rc.readSharedArray(i)) == encodeID(ArchonID)) {
                 // we found the requested ID!
-                return i - INDEX_START_FRIENDLY_ARCHON + 1;
+                return i - INDEX_START_FRIENDLY_ARCHON;
             }
         }
 
         // we did not find the requested archon ID
-        return 0;
+        return -1;
     }
 
     @Override
