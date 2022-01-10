@@ -51,7 +51,8 @@ public class WeightedRandomDirectionBasedPathfinding implements Pathfinding {
         MapLocation loc = new MapLocation(source.x, source.y).add(dir);
         double weight = 0;
 
-        if (!rc.isLocationOccupied(loc)) {
+        // check if location is valid and open
+        if (rc.onTheMap(loc) && !rc.isLocationOccupied(loc)) {
             // Location is open! Add it as an option! How much rubble is there?
             int rubble = rc.senseRubble(loc);
 

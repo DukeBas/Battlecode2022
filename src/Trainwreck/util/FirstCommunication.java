@@ -541,8 +541,6 @@ public class FirstCommunication implements Communication {
         MapLocation[] archonLocations = getMapLocationsArchons(INDEX_START_POTENTIAL_ENEMY_ARRAY,
                 getPotentialEnemyArchonCounter());
 
-        rc.setIndicatorString("pot len: " + getPotentialEnemyArchonCounter() + " arrlen: " + archonLocations.length);
-
 //        rc.setIndicatorString("pot arr length: "+ archonLocations.length + " while " + getPotentialEnemyArchonCounter());
 //        rc.setIndicatorString(rc.readSharedArray(INDEX_START_POTENTIAL_ENEMY_ARRAY) + " " + INDEX_START_POTENTIAL_ENEMY_ARRAY + 1);
 
