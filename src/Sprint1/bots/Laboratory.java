@@ -1,11 +1,11 @@
-package Trainwreck_Sprint1.bots;
+package Sprint1.bots;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 
-public class Watchtower extends Robot {
+public class Laboratory extends Robot {
 
-    public Watchtower(RobotController rc) {
+    public Laboratory(RobotController rc) {
         super(rc);
     }
 

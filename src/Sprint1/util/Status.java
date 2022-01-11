@@ -1,4 +1,4 @@
-package Trainwreck_Sprint1.util;
+package Sprint1.util;
 
 /**
  * Enumeration to hold different things to use as State in the shared array.

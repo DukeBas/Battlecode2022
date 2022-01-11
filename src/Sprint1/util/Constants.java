@@ -1,9 +1,6 @@
-package Trainwreck_Sprint1.util;
+package Sprint1.util;
 
 import battlecode.common.Direction;
-
-import java.util.Arrays;
-import java.util.stream.Stream;
 
 public class Constants {
 

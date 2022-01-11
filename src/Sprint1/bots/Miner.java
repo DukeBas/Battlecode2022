@@ -1,4 +1,4 @@
-package Trainwreck_Sprint1.bots;
+package Sprint1.bots;
 
 import Trainwreck.util.*;
 import battlecode.common.Direction;
@@ -9,7 +9,6 @@ import battlecode.common.RobotController;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public class Miner extends Robot {
     final int MAX_RESOURCE_LOCATIONS = 15; // at least 8
