@@ -1,6 +1,6 @@
 package Sprint1.bots;
 
-import Trainwreck.util.*;
+import Sprint1.util.*;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
