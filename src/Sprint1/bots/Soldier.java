@@ -1,9 +1,9 @@
 package Sprint1.bots;
 
-import Trainwreck.util.*;
+import Sprint1.util.*;
 import battlecode.common.*;
 
-import static Trainwreck.util.Helper.isCombatUnit;
+import static Sprint1.util.Helper.isCombatUnit;
 
 public class Soldier extends Robot {
 

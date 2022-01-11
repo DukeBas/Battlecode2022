@@ -1,13 +1,13 @@
 package Sprint1.bots;
 
-import Trainwreck.util.Communication;
-import Trainwreck.util.Constants;
-import Trainwreck.util.FirstCommunication;
+import Sprint1.util.Communication;
+import Sprint1.util.Constants;
+import Sprint1.util.FirstCommunication;
 import battlecode.common.*;
 
 import java.util.Random;
 
-import static Trainwreck.util.Helper.isDroid;
+import static Sprint1.util.Helper.isDroid;
 
 public abstract class Robot {
 

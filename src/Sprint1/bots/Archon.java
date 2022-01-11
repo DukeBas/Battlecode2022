@@ -1,9 +1,9 @@
 package Sprint1.bots;
 
-import Trainwreck.util.Status;
+import Sprint1.util.Status;
 import battlecode.common.*;
 
-import static Trainwreck.util.Helper.isCombatUnit;
+import static Sprint1.util.Helper.isCombatUnit;
 
 
 public class Archon extends Robot {
