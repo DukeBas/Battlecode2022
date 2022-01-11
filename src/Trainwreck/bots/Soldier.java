@@ -86,13 +86,15 @@ public class Soldier extends Robot {
              * Move to enemy if one is in vision range. Preferring target of attack.
              */
             if (nearbyEnemies.length > 0) {
-                // move towards an enemy.
-                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
-                if (toAttack != null) { // prefer the enemy we are attacking currently
-                    dir = pathfinder.getDirection(myLocation, toAttack, rc);
-                } else {
-                    dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
-                }
+                // Do not move if an enemy is in range!
+                dir = Direction.CENTER;
+//                // move towards an enemy.
+//                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
+//                if (toAttack != null) { // prefer the enemy we are attacking currently
+//                    dir = pathfinder.getDirection(myLocation, toAttack, rc);
+//                } else {
+//                    dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
+
             } else {
                 /*
                  * If we have a target location, travel towards it

@@ -1,9 +1,7 @@
-package Trainwreck_Sprint1;
+package Sprint1;
 
 import Trainwreck.bots.*;
 import battlecode.common.*;
-
-import java.util.Random;
 
 
 /**

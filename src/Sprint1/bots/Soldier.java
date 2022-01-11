@@ -1,4 +1,4 @@
-package Trainwreck_Sprint1.bots;
+package Sprint1.bots;
 
 import Trainwreck.util.*;
 import battlecode.common.*;

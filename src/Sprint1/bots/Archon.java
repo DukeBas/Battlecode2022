@@ -1,10 +1,7 @@
-package Trainwreck_Sprint1.bots;
+package Sprint1.bots;
 
-import Trainwreck.util.Constants;
 import Trainwreck.util.Status;
 import battlecode.common.*;
-
-import java.util.Objects;
 
 import static Trainwreck.util.Helper.isCombatUnit;
 

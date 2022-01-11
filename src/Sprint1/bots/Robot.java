@@ -1,11 +1,10 @@
-package Trainwreck_Sprint1.bots;
+package Sprint1.bots;
 
 import Trainwreck.util.Communication;
 import Trainwreck.util.Constants;
 import Trainwreck.util.FirstCommunication;
 import battlecode.common.*;
 
-import java.util.Objects;
 import java.util.Random;
 
 import static Trainwreck.util.Helper.isDroid;
