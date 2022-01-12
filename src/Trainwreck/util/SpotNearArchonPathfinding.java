@@ -14,7 +14,7 @@ public class SpotNearArchonPathfinding implements Pathfinding {
     @Override
     public Direction getDirection(MapLocation source, MapLocation target, RobotController rc) throws GameActionException {
         MapLocation targetSpot = source; // where we want to go to, initialise as current spot
-        int leastRubble = Integer.MAX_VALUE;
+        int bestPenaltyScore = Integer.MAX_VALUE; // lower score is better
 
         /*
          * Consider 5x5 square around us
@@ -36,10 +36,11 @@ public class SpotNearArchonPathfinding implements Pathfinding {
 
                 // is the location better?
                 int rubble = rc.senseRubble(loc);
-                if (rubble < leastRubble) {
+                int score = calcScore(target, loc, rubble);
+                if (score < bestPenaltyScore) {
                     // new better spot found!
                     targetSpot = loc;
-                    leastRubble = rubble;
+                    bestPenaltyScore = score;
                 }
             }
         }
@@ -76,5 +77,19 @@ public class SpotNearArchonPathfinding implements Pathfinding {
     private boolean blockingArchon(MapLocation archon, MapLocation loc) {
         int dist = archon.distanceSquaredTo(loc);
         return dist <= 2 || dist == 8 || dist == 18 || dist == 32; // checks for ring of at most 34
+    }
+
+    /**
+     * Use a scoring function to determine the best tiles around the archon. Uses distance from archon and rubble.
+     * Lower is better.
+     * This was done as using just rubble made all units go to one direction (the first considered in dx/dy loop).
+     *
+     * @param archon location of the archon
+     * @param loc    to calculate the score for
+     * @param rubble on that location
+     * @return score of the location
+     */
+    private int calcScore(MapLocation archon, MapLocation loc, int rubble) {
+        return rubble + archon.distanceSquaredTo(loc);
     }
 }
