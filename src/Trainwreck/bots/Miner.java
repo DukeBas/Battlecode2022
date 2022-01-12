@@ -16,8 +16,9 @@ public class Miner extends Robot {
         /*
          * Generate semi-random initial starting location based on own location, map and archon.
          */
-        // TODO.. close to edges?
-        targetPathfindingLocation = new MapLocation(11,11);
+        // TODO.. something depending on archon, edges, layout, and symmetry?
+//        targetPathfindingLocation = new MapLocation(11, 11);
+        determineTargetLocation(rc.getLocation()); // temporarily just call regular set location function
     }
 
     /**
@@ -134,18 +135,19 @@ public class Miner extends Robot {
          *
          * //TODO.. add not going to resource deposits if it is in range of enemy combatants?
          */
-        determineTargetLocation();
+        determineTargetLocation(myLocation);
         Direction dir;
         if (ResourceLocations.size() > 0) { // there are resource deposits nearby
-                LocationWithResources targetResource = ResourceLocations.get(0); // get the best one
-                rc.setIndicatorString(targetResource.loc + " ");
-                dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
+            LocationWithResources targetResource = ResourceLocations.get(0); // get the best one
+            rc.setIndicatorString(targetResource.loc + " ");
+            dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
 
         } else { // no resource nearby!
             if (nearbyEnemyCombatants.length > 0) { // there are enemy combatants nearby!
-//                dir = new BestOppositePathfinding().getDirection(myLocation, nearbyEnemyCombatants[0].location, rc);
+                dir = new BestOppositePathfinding().getDirection(myLocation, nearbyEnemyCombatants[0].location, rc);
                 rc.setIndicatorString("enemies nearby!");
-                dir = Direction.SOUTH;
+                // force reset target location, so we do not keep going towards enemy
+                targetPathfindingLocation = null;
 
             } else { // coast is clear
                 rc.setIndicatorString("Going toward " + targetPathfindingLocation);
@@ -170,11 +172,18 @@ public class Miner extends Robot {
     /**
      * Checks if we are close to target location and sets a new one.
      */
-    private void determineTargetLocation(){
+    private void determineTargetLocation(MapLocation myLoc) {
         // are we close to target?
-//        if (target)
+        if (targetPathfindingLocation == null || (myLoc.distanceSquaredTo(targetPathfindingLocation) <= 8)) {
+            /*
+             * We are close to target location, or we do not have one. Generate a new one.
+             */
 
-        targetPathfindingLocation = new MapLocation(11,11);
+            //TODO... develop a more sophisticated target generation algorithm
+            int x = (int) (rc.getMapWidth() * Math.random());
+            int y = (int) (rc.getMapHeight() * Math.random());
+            targetPathfindingLocation = new MapLocation(x, y);
+        }
     }
 }
 
