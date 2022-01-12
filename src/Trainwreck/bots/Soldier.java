@@ -7,7 +7,8 @@ import static Trainwreck.util.Helper.isCombatUnit;
 
 public class Soldier extends Robot {
     private final static int NUM_ENEMIES_MANY = 5; // when do we say there are many enemies nearby?
-    private final static double ENEMY_COUNTING_FACTOR = 1.1; // when comparing friendly to enemy numbers
+    private final static double ENEMY_COUNTING_FACTOR = 0.8; // when comparing friendly to enemy numbers
+    private final static double FRIENDLY_OVERWHELMING_FACTOR = 3; // when are our forces overwhelming?
 
     public Soldier(RobotController rc) {
         super(rc);
@@ -74,7 +75,7 @@ public class Soldier extends Robot {
 
             if (rc.canAttack(toAttack)) {
                 rc.attack(toAttack);
-             }
+            }
         }
 
 
@@ -88,6 +89,7 @@ public class Soldier extends Robot {
          * If number of nearby friendlies is much greater than enemies in vision range, move closer to overwhelm.
          */
         Direction dir;
+        Pathfinding pathfinder;
         if (comms.getState(Status.ATTACK_SIGNAL)) { // go to attack!!!
 
             // get number of enemies and friendlies to decide what to do
@@ -99,48 +101,38 @@ public class Soldier extends Robot {
 
                 if (numAttackableEnemies > 0) { // enemies in attackable range!
 
-                    if ()
-
-
-
-
-
-
-
-
-
-
-                    //////////////////OLD
-                    // Do not move if an enemy is in range!
-                    dir = Direction.CENTER;
-//                // move towards an enemy.
-//                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
-//                if (toAttack != null) { // prefer the enemy we are attacking currently
-//                    dir = pathfinder.getDirection(myLocation, toAttack, rc);
-//                } else {
-//                    dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
-                    //////////////////OLD
-
-
-
+                    boolean archonNearby = myLocation.distanceSquaredTo(comms.getLocationClosestFriendlyArchon())
+                            <= actionRadiusSquared;
 
                     /*
                      * If there are too many enemy units compared to the number of friendly units, retreat.
                      * But if there is a friendly archon nearby, do not do this! Repel the enemy or die trying!
                      */
-                    // Todo...
+                    if (!archonNearby && numAttackableEnemies > NUM_ENEMIES_MANY &&
+                            numEnemies * ENEMY_COUNTING_FACTOR > numFriendlies) { // too many enemies nearby! Retreat!
+                        pathfinder = new BestOppositePathfinding();
+                        dir = pathfinder.getDirection(myLocation,
+                                toAttack, // ideally we would run from closest enemy, but this is good enough
+                                rc);
+                    }
 
                     /*
-                     * If there are around equal numbers of enemies and friendlies, try to stay
+                     * If there are comparable numbers of enemies and friendlies, try to stay
                      * out of range of too many enemies while preferring lighter tiles so we can attack more often.
                      */
-                    // Todo...
+                    else if (numFriendlies < numEnemies * FRIENDLY_OVERWHELMING_FACTOR) { // stand and fight!
 
 
-                    /*
-                     * If we are in far greater numbers compared to the enemy, move in towards them to overwhelm.
-                     */
-                    // TODO...
+
+
+                    } else {
+                        /*
+                         * We are in far greater numbers compared to the enemy, move in towards them to overwhelm!
+                         */
+                        pathfinder = new WeightedRandomDirectionBasedPathfinding();
+                        // prefer the enemy we are attacking currently
+                        dir = pathfinder.getDirection(myLocation, toAttack, rc);
+                    }
 
                 } else { // enemies in vision range, but none are attackable currently.
 
