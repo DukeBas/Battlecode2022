@@ -90,6 +90,7 @@ public class Soldier extends Robot {
          */
         Direction dir;
         Pathfinding pathfinder;
+        rc.setIndicatorString("start");
         if (comms.getState(Status.ATTACK_SIGNAL)) { // go to attack!!!
 
             // get number of enemies and friendlies to decide what to do
@@ -110,6 +111,7 @@ public class Soldier extends Robot {
                      */
                     if (!archonNearby && numAttackableEnemies > NUM_ENEMIES_MANY &&
                             numEnemies * ENEMY_COUNTING_FACTOR > numFriendlies) { // too many enemies nearby! Retreat!
+                        rc.setIndicatorString("Retreating!");
                         pathfinder = new BestOppositePathfinding();
                         dir = pathfinder.getDirection(myLocation,
                                 toAttack, // ideally we would run from closest enemy, but this is good enough
@@ -121,11 +123,13 @@ public class Soldier extends Robot {
                      * out of range of too many enemies while preferring lighter tiles so we can attack more often.
                      */
                     else if (numFriendlies < numEnemies * FRIENDLY_OVERWHELMING_FACTOR) { // stand and fight!
+                        rc.setIndicatorString("Standing to fight!");
                         // find a good nearby spot to fight from!
                         pathfinder = new FightingGroundPathfinding();
                         dir = pathfinder.getDirection(myLocation, toAttack, rc);
 
                     } else {
+                        rc.setIndicatorString("Moving to overwhelm!");
                         /*
                          * We are in far greater numbers compared to the enemy, move in towards them to overwhelm!
                          */
@@ -135,38 +139,36 @@ public class Soldier extends Robot {
                     }
 
                 } else { // enemies in vision range, but none are attackable currently.
-
-
-                    //////////////////OLD
-                    dir = Direction.CENTER;
-                    //////////////////OLD
-
-
+                    rc.setIndicatorString("Enemy not attackable, but in vision");
                     /*
                      * Move to closer favorable tile, if the number of enemy combatants is not too much
                      * compared to friendly forces, else retreat
                      */
-                    // TODO...
+                    pathfinder = new WeightedRandomDirectionBasedPathfinding();
+                    dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
+
+                    // TODO... better than just travelling towards enemy!!
                 }
 
             } else { // no enemies spotted!
-
+                rc.setIndicatorString("No enemies spotted! Travelling towards " + targetArchonLocation);
                 /*
                  * If we have a target location, travel towards it
                  */
                 if (targetArchonLocation != null) {
-                    Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
+                    pathfinder = new WeightedRandomDirectionBasedPathfinding();
                     dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
 
                 } else { // should realistically never happen that we do not know anything to travel towards.
                     // move semi randomly
-                    Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
+                    pathfinder = new RandomPreferLessRubblePathfinding();
                     dir = pathfinder.getDirection(myLocation, myLocation, rc);
                 }
             }
 
         } else { // Wait for attack signal!
-            Pathfinding pathfinder = new SpotNearArchonPathfinding();
+            rc.setIndicatorString("Waiting for attack signal!");
+            pathfinder = new SpotNearArchonPathfinding();
             dir = pathfinder.getDirection(myLocation, comms.getLocationClosestFriendlyArchon(), rc);
         }
 

@@ -33,6 +33,8 @@ public class FightingGroundPathfinding implements Pathfinding {
             }
         }
 
+//        rc.setIndicatorString(out + "");
+
         return out;
     }
 }
