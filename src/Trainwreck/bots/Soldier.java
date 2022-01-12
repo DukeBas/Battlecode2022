@@ -151,13 +151,13 @@ public class Soldier extends Robot {
                 }
 
             } else { // no enemies spotted!
-                rc.setIndicatorString("No enemies spotted! Travelling towards " + targetLocation);
+                rc.setIndicatorString("No enemies spotted! Travelling towards " + targetArchonLocation);
                 /*
                  * If we have a target location, travel towards it
                  */
-                if (targetLocation != null) {
+                if (targetArchonLocation != null) {
                     pathfinder = new WeightedRandomDirectionBasedPathfinding();
-                    dir = pathfinder.getDirection(myLocation, targetLocation, rc);
+                    dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
 
                 } else { // only happens if an enemy archon has moved, and we have not spotted it yet.
                     // move semi randomly
@@ -197,14 +197,14 @@ public class Soldier extends Robot {
         MapLocation closestEnemyArchon = comms.getLocationClosestEnemyArchon();
         if (closestEnemyArchon != null) {
             // there is a known enemy archon location!
-            targetLocation = closestEnemyArchon;
+            targetArchonLocation = closestEnemyArchon;
             return; // prevent looking further
         }
 
         /*
          * Set suspected location which have an enemy archon as target, if we do not have on yet
          */
-        targetLocation = comms.getClosestPotentialEnemyArchonLocation();
+        targetArchonLocation = comms.getClosestPotentialEnemyArchonLocation();
 
     }
 }

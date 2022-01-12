@@ -17,6 +17,7 @@ public class Miner extends Robot {
          * Generate semi-random initial starting location based on own location, map and archon.
          */
         // TODO.. close to edges?
+        targetPathfindingLocation = new MapLocation(11,11);
     }
 
     /**
@@ -133,19 +134,24 @@ public class Miner extends Robot {
          *
          * //TODO.. add not going to resource deposits if it is in range of enemy combatants?
          */
+        determineTargetLocation();
         Direction dir;
-        System.out.println("test");
         if (ResourceLocations.size() > 0) { // there are resource deposits nearby
-//            LocationWithResources targetResource = ResourceLocations.get(0); // get the best one
-//            dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
+                LocationWithResources targetResource = ResourceLocations.get(0); // get the best one
+                rc.setIndicatorString(targetResource.loc + " ");
+                dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
+
         } else { // no resource nearby!
             if (nearbyEnemyCombatants.length > 0) { // there are enemy combatants nearby!
 //                dir = new BestOppositePathfinding().getDirection(myLocation, nearbyEnemyCombatants[0].location, rc);
+                rc.setIndicatorString("enemies nearby!");
+                dir = Direction.SOUTH;
+
             } else { // coast is clear
-//                dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetLocation, rc);
+                rc.setIndicatorString("Going toward " + targetPathfindingLocation);
+                dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetPathfindingLocation, rc);
             }
         }
-        dir = Direction.CENTER;
 
         // try to move toward target, if not already there
 //        rc.setIndicatorString("canMove(" + dir + ") = " + rc.canMove(dir));
@@ -167,6 +173,8 @@ public class Miner extends Robot {
     private void determineTargetLocation(){
         // are we close to target?
 //        if (target)
+
+        targetPathfindingLocation = new MapLocation(11,11);
     }
 }
 

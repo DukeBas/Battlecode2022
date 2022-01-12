@@ -6,8 +6,6 @@ import Trainwreck.util.FirstCommunication;
 import battlecode.common.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.Random;
 
 import static Trainwreck.util.Helper.isCombatUnit;
@@ -44,7 +42,12 @@ public abstract class Robot {
     /**
      * Variable to hold a location as a target enemy archon.
      */
-    protected MapLocation targetLocation = null;
+    protected MapLocation targetArchonLocation = null;
+
+    /**
+     * Variable to hold a location to path to.
+     */
+    protected MapLocation targetPathfindingLocation = null;
 
     /**
      * Variable to store ID of enemy team
@@ -175,6 +178,7 @@ public abstract class Robot {
 
     /**
      * Method to hold communication actions.
+     * Currently used
      */
     void communicationStrategy() throws GameActionException {
         comms.checkForEnemyArchons();
@@ -183,14 +187,14 @@ public abstract class Robot {
          * If we have a target location and can see it, then the archon was added before in comms.checkForEnemyArchons();
          * So only clear location if in vision range
          */
-        if (targetLocation != null && rc.canSenseLocation(targetLocation)) {
+        if (targetArchonLocation != null && rc.canSenseLocation(targetArchonLocation)) {
             // if location does not contain an enemy archon, invalidate it
-            RobotInfo robotAtLocation = rc.senseRobotAtLocation(targetLocation);
+            RobotInfo robotAtLocation = rc.senseRobotAtLocation(targetArchonLocation);
             if (!(robotAtLocation != null && robotAtLocation.team == enemy)) {
                 // nothing here! clear target location!
                 rc.setIndicatorString("NOTHING HERE, CLEARING");
-                comms.invalidateLocationEnemyArchon(targetLocation);
-                targetLocation = null;
+                comms.invalidateLocationEnemyArchon(targetArchonLocation);
+                targetArchonLocation = null;
             }
         }
 
