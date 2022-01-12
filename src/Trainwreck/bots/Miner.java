@@ -98,9 +98,11 @@ public class Miner extends Robot {
             ResourceLocations.add(best);
         }
 
+
         /*
          * Mine highest valued tiles around us first. Mining gold first.
          */
+        // TODO if close to enemy archon, do mine last 1 lead of a deposit!
         for (LocationWithResources lwr : MineableLocations) {
             if (!rc.isActionReady()) {
                 // if no more action can be taken, break out of loop to save bytecode.
@@ -125,53 +127,25 @@ public class Miner extends Robot {
         }
 
 
-
         /*
          * If there is a resource deposit nearby, travel towards the best one.
          * Else, go towards target location.
          *
          * //TODO.. add not going to resource deposits if it is in range of enemy combatants?
          */
-
-
-        /*
-         * If there is a gold resource in sight, travel towards it. Otherwise, go to the largest lead deposit nearby.
-         * Since array is sorted, if the first place does not contain gold, none will. If the first place does
-         * contain gold, then it automatically also contains the most amount available nearby.
-         * Do not go to lead deposits with only 1 left. (see earlier comment for what locations we consider.)
-         * Help looking for enemy archons (and hopefully find more lead in the process as well) when there are
-         * no resources in sight.
-         */
         Direction dir;
-        if (ResourceLocations.size() > 0) { // there are targets
-            LocationWithResources target = ResourceLocations.get(0);
-            if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
-                if (targetLocation != null) { // help with scouting!
-                    Pathfinding randomPathfinder = new WeightedRandomDirectionBasedPathfinding();
-                    dir = randomPathfinder.getDirection(myLocation, targetLocation, rc);
-                } else {
-                    // move randomly
-                    Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
-                    dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
-                }
-
-            } else { // find direction to target
-                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
-                dir = pathfinder.getDirection(myLocation, target.loc, rc);
-                if (myLocation.equals(target.loc)) { // Stand still if at target
-                    dir = Direction.CENTER;
-                }
-            }
-        } else {
-            if (targetLocation != null) { // help with scouting!
-                Pathfinding randomPathfinder = new WeightedRandomDirectionBasedPathfinding();
-                dir = randomPathfinder.getDirection(myLocation, targetLocation, rc);
-            } else {
-                // move randomly
-                Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
-                dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
+        System.out.println("test");
+        if (ResourceLocations.size() > 0) { // there are resource deposits nearby
+//            LocationWithResources targetResource = ResourceLocations.get(0); // get the best one
+//            dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
+        } else { // no resource nearby!
+            if (nearbyEnemyCombatants.length > 0) { // there are enemy combatants nearby!
+//                dir = new BestOppositePathfinding().getDirection(myLocation, nearbyEnemyCombatants[0].location, rc);
+            } else { // coast is clear
+//                dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetLocation, rc);
             }
         }
+        dir = Direction.CENTER;
 
         // try to move toward target, if not already there
 //        rc.setIndicatorString("canMove(" + dir + ") = " + rc.canMove(dir));
