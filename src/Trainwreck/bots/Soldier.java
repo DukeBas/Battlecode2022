@@ -6,6 +6,8 @@ import battlecode.common.*;
 import static Trainwreck.util.Helper.isCombatUnit;
 
 public class Soldier extends Robot {
+    private final static int NUM_ENEMIES_MANY = 5; // when do we say there are many enemies nearby?
+    private final static double ENEMY_COUNTING_FACTOR = 1.1; // when comparing friendly to enemy numbers
 
     public Soldier(RobotController rc) {
         super(rc);
@@ -31,6 +33,7 @@ public class Soldier extends Robot {
          */
         RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(visionRadiusSquared, enemy);
         RobotInfo[] attackableEnemies = rc.senseNearbyRobots(actionRadiusSquared, enemy);
+        RobotInfo[] nearbyFriendlies = rc.senseNearbyRobots(visionRadiusSquared, friendly);
 
 
         /*
@@ -71,7 +74,7 @@ public class Soldier extends Robot {
 
             if (rc.canAttack(toAttack)) {
                 rc.attack(toAttack);
-            }
+             }
         }
 
 
@@ -87,10 +90,24 @@ public class Soldier extends Robot {
         Direction dir;
         if (comms.getState(Status.ATTACK_SIGNAL)) { // go to attack!!!
 
-            if (nearbyEnemies.length > 0) { // enemies withing vision range!
+            // get number of enemies and friendlies to decide what to do
+            int numFriendlies = nearbyFriendlies.length;
+            int numAttackableEnemies = attackableEnemies.length;
+            int numEnemies = nearbyEnemies.length;
 
-                if (attackableEnemies.length > 0) {
-                    // enemies in attackable range!
+            if (numEnemies > 0) { // enemies withing vision range!
+
+                if (numAttackableEnemies > 0) { // enemies in attackable range!
+
+                    if ()
+
+
+
+
+
+
+
+
 
 
                     //////////////////OLD
@@ -125,8 +142,8 @@ public class Soldier extends Robot {
                      */
                     // TODO...
 
-                } else {
-                    // enemies in vision range, but none are attackable currently.
+                } else { // enemies in vision range, but none are attackable currently.
+
 
                     //////////////////OLD
                     dir = Direction.CENTER;
