@@ -78,65 +78,92 @@ public class Soldier extends Robot {
         /*
          * Movement strategy:
          * First, either wait at base or move towards enemy archons depending on attack signal.
+         *
          * When an enemy is spotted, stand still or move to nearby more favorable tiles.
          *      This is in the hope that more allies will reinforce us, so soldiers stick together.
          * If there are a lot more enemies in vision range than friendlies, retreat (unless near friendly archon).
          * If number of nearby friendlies is much greater than enemies in vision range, move closer to overwhelm.
          */
         Direction dir;
-        if (comms.getState(Status.ATTACK_SIGNAL)) {
-            // Go to attack!!!
+        if (comms.getState(Status.ATTACK_SIGNAL)) { // go to attack!!!
+
+            if (nearbyEnemies.length > 0) { // enemies withing vision range!
+
+                if (attackableEnemies.length > 0) {
+                    // enemies in attackable range!
 
 
-
-
-            /*
-             * Enemy spotted! Todo...
-             */
-
-
-
-            /*
-             * Move to enemy if one is in vision range. Preferring target of attack.
-             */
-            if (attackableEnemies.length > 0) {
-                // Do not move if an enemy is in range!
-                dir = Direction.CENTER;
+                    //////////////////OLD
+                    // Do not move if an enemy is in range!
+                    dir = Direction.CENTER;
 //                // move towards an enemy.
 //                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
 //                if (toAttack != null) { // prefer the enemy we are attacking currently
 //                    dir = pathfinder.getDirection(myLocation, toAttack, rc);
 //                } else {
 //                    dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
+                    //////////////////OLD
 
-            } else {
+
+
+
+                    /*
+                     * If there are too many enemy units compared to the number of friendly units, retreat.
+                     * But if there is a friendly archon nearby, do not do this! Repel the enemy or die trying!
+                     */
+                    // Todo...
+
+                    /*
+                     * If there are around equal numbers of enemies and friendlies, try to stay
+                     * out of range of too many enemies while preferring lighter tiles so we can attack more often.
+                     */
+                    // Todo...
+
+
+                    /*
+                     * If we are in far greater numbers compared to the enemy, move in towards them to overwhelm.
+                     */
+                    // TODO...
+
+                } else {
+                    // enemies in vision range, but none are attackable currently.
+
+                    //////////////////OLD
+                    dir = Direction.CENTER;
+                    //////////////////OLD
+
+
+                    /*
+                     * Move to closer favorable tile, if the number of enemy combatants is not too much
+                     * compared to friendly forces, else retreat
+                     */
+                    // TODO...
+                }
+
+            } else { // no enemies spotted!
+
                 /*
                  * If we have a target location, travel towards it
                  */
                 if (targetArchonLocation != null) {
                     Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
                     dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
-                } else {
+
+                } else { // should realistically never happen that we do not know anything to travel towards.
                     // move semi randomly
                     Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
                     dir = pathfinder.getDirection(myLocation, myLocation, rc);
                 }
             }
-        } else {
-            // Wait till attack signal!
+
+        } else { // Wait for attack signal!
             Pathfinding pathfinder = new SpotNearArchonPathfinding();
             dir = pathfinder.getDirection(myLocation, comms.getLocationClosestFriendlyArchon(), rc);
         }
 
 
-
-
-
 //        rc.setIndicatorString(comms.getState(Status.ATTACK_SIGNAL) + " " + dir);
 //        rc.setIndicatorString("cur: " + targetArchonLocation + " close " + comms.getLocationClosestEnemyArchon());
-
-
-
 
 
         /*
