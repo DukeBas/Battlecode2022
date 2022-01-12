@@ -6,13 +6,17 @@ import battlecode.common.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public class Miner extends Robot {
     final int MAX_RESOURCE_LOCATIONS = 15; // at least 8
 
     public Miner(RobotController rc) {
         super(rc);
+
+        /*
+         * Generate semi-random initial starting location based on own location, map and archon.
+         */
+        // TODO.. close to edges?
     }
 
     /**
@@ -28,6 +32,7 @@ public class Miner extends Robot {
          * Get nearby enemies.
          */
         RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(visionRadiusSquared, enemy);
+        RobotInfo[] nearbyEnemyCombatants = getCombatants(nearbyEnemies);
 
         /*
          * Communicate!
@@ -119,9 +124,15 @@ public class Miner extends Robot {
             }
         }
 
+
+
         /*
          * If there is a resource deposit nearby, travel towards the best one.
+         * Else, go towards target location.
+         *
+         * //TODO.. add not going to resource deposits if it is in range of enemy combatants?
          */
+
 
         /*
          * If there is a gold resource in sight, travel towards it. Otherwise, go to the largest lead deposit nearby.
@@ -135,9 +146,9 @@ public class Miner extends Robot {
         if (ResourceLocations.size() > 0) { // there are targets
             LocationWithResources target = ResourceLocations.get(0);
             if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
-                if (targetArchonLocation != null) { // help with scouting!
+                if (targetLocation != null) { // help with scouting!
                     Pathfinding randomPathfinder = new WeightedRandomDirectionBasedPathfinding();
-                    dir = randomPathfinder.getDirection(myLocation, targetArchonLocation, rc);
+                    dir = randomPathfinder.getDirection(myLocation, targetLocation, rc);
                 } else {
                     // move randomly
                     Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
@@ -152,9 +163,9 @@ public class Miner extends Robot {
                 }
             }
         } else {
-            if (targetArchonLocation != null) { // help with scouting!
+            if (targetLocation != null) { // help with scouting!
                 Pathfinding randomPathfinder = new WeightedRandomDirectionBasedPathfinding();
-                dir = randomPathfinder.getDirection(myLocation, targetArchonLocation, rc);
+                dir = randomPathfinder.getDirection(myLocation, targetLocation, rc);
             } else {
                 // move randomly
                 Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
@@ -173,14 +184,16 @@ public class Miner extends Robot {
     @Override
     void communicationStrategy() throws GameActionException {
         super.communicationStrategy(); // execute commands in super class
-
-        /*
-         * Update target, if one is available
-         */
-        targetArchonLocation = comms.getClosestPotentialEnemyArchonLocation();
     }
 
 
+    /**
+     * Checks if we are close to target location and sets a new one.
+     */
+    private void determineTargetLocation(){
+        // are we close to target?
+//        if (target)
+    }
 }
 
 /**

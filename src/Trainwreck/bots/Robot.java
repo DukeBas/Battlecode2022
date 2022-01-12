@@ -44,7 +44,7 @@ public abstract class Robot {
     /**
      * Variable to hold a location as a target enemy archon.
      */
-    protected MapLocation targetArchonLocation = null;
+    protected MapLocation targetLocation = null;
 
     /**
      * Variable to store ID of enemy team
@@ -183,14 +183,14 @@ public abstract class Robot {
          * If we have a target location and can see it, then the archon was added before in comms.checkForEnemyArchons();
          * So only clear location if in vision range
          */
-        if (targetArchonLocation != null && rc.canSenseLocation(targetArchonLocation)) {
+        if (targetLocation != null && rc.canSenseLocation(targetLocation)) {
             // if location does not contain an enemy archon, invalidate it
-            RobotInfo robotAtLocation = rc.senseRobotAtLocation(targetArchonLocation);
+            RobotInfo robotAtLocation = rc.senseRobotAtLocation(targetLocation);
             if (!(robotAtLocation != null && robotAtLocation.team == enemy)) {
                 // nothing here! clear target location!
                 rc.setIndicatorString("NOTHING HERE, CLEARING");
-                comms.invalidateLocationEnemyArchon(targetArchonLocation);
-                targetArchonLocation = null;
+                comms.invalidateLocationEnemyArchon(targetLocation);
+                targetLocation = null;
             }
         }
 
