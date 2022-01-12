@@ -76,7 +76,7 @@ public class Soldier extends Robot {
 
 
         /*
-         * Move based on if attack signal is true
+         * Move towards enemy based on if attack signal is true
          */
         Direction dir;
         if (comms.getState(Status.ATTACK_SIGNAL)) {
@@ -85,7 +85,7 @@ public class Soldier extends Robot {
             /*
              * Move to enemy if one is in vision range. Preferring target of attack.
              */
-            if (nearbyEnemies.length > 0) {
+            if (attackableEnemies.length > 0) {
                 // Do not move if an enemy is in range!
                 dir = Direction.CENTER;
 //                // move towards an enemy.
@@ -114,9 +114,16 @@ public class Soldier extends Robot {
             dir = pathfinder.getDirection(myLocation, comms.getLocationClosestFriendlyArchon(), rc);
         }
 
-//        rc.setIndicatorString(comms.getState(Status.ATTACK_SIGNAL) + " " + dir);
 
+
+
+
+//        rc.setIndicatorString(comms.getState(Status.ATTACK_SIGNAL) + " " + dir);
 //        rc.setIndicatorString("cur: " + targetArchonLocation + " close " + comms.getLocationClosestEnemyArchon());
+
+
+
+
 
         /*
          * Move if it is possible.
