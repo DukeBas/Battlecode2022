@@ -76,11 +76,25 @@ public class Soldier extends Robot {
 
 
         /*
-         * Move towards enemy based on if attack signal is true
+         * Movement strategy:
+         * First, either wait at base or move towards enemy archons depending on attack signal.
+         * When an enemy is spotted, stand still or move to nearby more favorable tiles.
+         *      This is in the hope that more allies will reinforce us, so soldiers stick together.
+         * If there are a lot more enemies in vision range than friendlies, retreat (unless near friendly archon).
+         * If number of nearby friendlies is much greater than enemies in vision range, move closer to overwhelm.
          */
         Direction dir;
         if (comms.getState(Status.ATTACK_SIGNAL)) {
             // Go to attack!!!
+
+
+
+
+            /*
+             * Enemy spotted! Todo...
+             */
+
+
 
             /*
              * Move to enemy if one is in vision range. Preferring target of attack.
