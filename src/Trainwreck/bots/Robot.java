@@ -88,16 +88,16 @@ public abstract class Robot {
             creatorID = -1;
         } else {
             // Not an archon!
+            RobotInfo[] closeFriendlies = rc.senseNearbyRobots(2, friendly);
             if (isDroid(ownType)) {
                 // Droid, always built by an archon!
-                RobotInfo[] nearbyFriendlies = rc.senseNearbyRobots(2, friendly);
 
                 /*
                  * Go through nearby friendly units until an archon is found.
                  * even if this is not the exact correct one, it means that the archons are very close
                  * together, so it should not matter in the grand scheme of things.
                  */
-                for (RobotInfo bot : nearbyFriendlies) {
+                for (RobotInfo bot : closeFriendlies) {
                     if (bot.getType() == RobotType.ARCHON) {
                         creatorID = bot.getID();
                         break;
@@ -105,15 +105,13 @@ public abstract class Robot {
                 }
             } else {
                 // Not a droid, so must be either a laboratory or watchtower.
-                // NOTE: WE ASSUME HERE BUILD RANGE IS 5 (ACTION RADIUS), BUT IT COULD BE 2.
                 // Droid, always built by an archon!
-                RobotInfo[] nearbyFriendlies = rc.senseNearbyRobots(5, friendly);
 
                 /*
                  * Go through nearby friendly units until a builder is found.
                  * There might be multiple close, so this is currently not accurate.
                  */
-                for (RobotInfo bot : nearbyFriendlies) {
+                for (RobotInfo bot : closeFriendlies) {
                     if (bot.getType() == RobotType.BUILDER) {
                         creatorID = bot.getID();
                         break;
