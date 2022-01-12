@@ -8,6 +8,7 @@ import battlecode.common.RobotController;
 /**
  * Interface defines getDirection function for pathfinding.
  */
+@FunctionalInterface
 public interface Pathfinding {
     /**
      * Returns direction robot should take to find a path from source to target.
