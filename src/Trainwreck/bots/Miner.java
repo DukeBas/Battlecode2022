@@ -1,10 +1,7 @@
 package Trainwreck.bots;
 
 import Trainwreck.util.*;
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
+import battlecode.common.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +23,11 @@ public class Miner extends Robot {
     @Override
     void run() throws GameActionException {
         MapLocation myLocation = rc.getLocation();
+
+        /*
+         * Get nearby enemies.
+         */
+        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(visionRadiusSquared, enemy);
 
         /*
          * Communicate!
@@ -116,6 +118,10 @@ public class Miner extends Robot {
                 leadLeft--;
             }
         }
+
+        /*
+         * If there is a resource deposit nearby, travel towards the best one.
+         */
 
         /*
          * If there is a gold resource in sight, travel towards it. Otherwise, go to the largest lead deposit nearby.

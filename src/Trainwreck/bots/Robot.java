@@ -5,9 +5,12 @@ import Trainwreck.util.Constants;
 import Trainwreck.util.FirstCommunication;
 import battlecode.common.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
 
+import static Trainwreck.util.Helper.isCombatUnit;
 import static Trainwreck.util.Helper.isDroid;
 
 public abstract class Robot {
@@ -158,7 +161,7 @@ public abstract class Robot {
                 System.out.println(ownType + " Generic-Exception");
                 e.printStackTrace();
 
-                rc.setIndicatorString(e.getStackTrace()[0].getMethodName() + " : "+ e);
+                rc.setIndicatorString(e.getStackTrace()[0].getMethodName() + " : " + e);
             } finally {
                 // Signify we've done everything we want to do, thereby ending our turn.
                 // This will make our code wait until the next turn, and then perform this loop again.
@@ -230,8 +233,30 @@ public abstract class Robot {
         return dir;
     }
 
+    /**
+     * Increases the unit counter for this unit type in the communications.
+     */
     private void increaseUnitCounter() throws GameActionException {
         comms.increaseUnitCounter(builtByID, ownType);
+    }
+
+    /**
+     * Takes an array of robots and returns a copy with all non-combat units filtered out.
+     *
+     * @param robots to filter
+     * @return filtered array to combatants
+     */
+    protected final RobotInfo[] getCombatants(RobotInfo[] robots) {
+        // could use Java 8 stream API here instead
+        ArrayList<RobotInfo> combatants = new ArrayList<>();
+
+        for (RobotInfo bot : robots) {
+            if (isCombatUnit(bot.type)) {
+                combatants.add(bot);
+            }
+        }
+
+        return combatants.toArray(new RobotInfo[0]);
     }
 
     /**
