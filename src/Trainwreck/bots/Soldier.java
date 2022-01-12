@@ -121,9 +121,9 @@ public class Soldier extends Robot {
                      * out of range of too many enemies while preferring lighter tiles so we can attack more often.
                      */
                     else if (numFriendlies < numEnemies * FRIENDLY_OVERWHELMING_FACTOR) { // stand and fight!
-
-
-
+                        // find a good nearby spot to fight from!
+                        pathfinder = new FightingGroundPathfinding();
+                        dir = pathfinder.getDirection(myLocation, toAttack, rc);
 
                     } else {
                         /*
