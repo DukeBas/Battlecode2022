@@ -104,7 +104,6 @@ public class Miner extends Robot {
         /*
          * Mine highest valued tiles around us first. Mining gold first.
          */
-        // TODO if close to enemy archon, do mine last 1 lead of a deposit!
         for (LocationWithResources lwr : MineableLocations) {
             if (!rc.isActionReady()) {
                 // if no more action can be taken, break out of loop to save bytecode.
@@ -115,16 +114,30 @@ public class Miner extends Robot {
                 rc.mineGold(lwr.loc);
             }
         }
-        for (LocationWithResources lwr : MineableLocations) {
-            if (!rc.isActionReady()) {
-                // if no more action can be taken, break out of loop to save bytecode.
-                break;
+        if (rc.isActionReady()) { // we can still mine!
+            /*
+             * If an enemy archon is near, mine the last lead from deposits to hopefully starve the enemy of resources.
+             */
+            int minLeadValue = 1; // reduced to 0 if an enemy archon is near
+
+            for (RobotInfo bot : nearbyEnemies) {
+                if (bot.type == RobotType.ARCHON) {
+                    minLeadValue = 0;
+                    break;
+                }
             }
-            // mines until there is one lead left.
-            int leadLeft = rc.senseLead(lwr.loc);
-            while (leadLeft > 1 && rc.canMineLead(lwr.loc)) {
-                rc.mineLead(lwr.loc);
-                leadLeft--;
+
+            for (LocationWithResources lwr : MineableLocations) {
+                if (!rc.isActionReady()) {
+                    // if no more action can be taken, break out of loop to save bytecode.
+                    break;
+                }
+                // mines until there is one lead left.
+                int leadLeft = rc.senseLead(lwr.loc);
+                while (leadLeft > minLeadValue && rc.canMineLead(lwr.loc)) {
+                    rc.mineLead(lwr.loc);
+                    leadLeft--;
+                }
             }
         }
 
@@ -140,7 +153,7 @@ public class Miner extends Robot {
 
             RobotInfo[] combatantsNearResource = getCombatants(rc.senseNearbyRobots(targetResource.loc,
                     RobotType.SOLDIER.actionRadiusSquared, enemy));
-            if (combatantsNearResource.length > 0){
+            if (combatantsNearResource.length > 0) {
                 // there are enemy combatants nearby the resource!
                 dir = new BestOppositePathfinding().getDirection(myLocation, combatantsNearResource[0].location, rc);
                 rc.setIndicatorString("enemies near resource!");
