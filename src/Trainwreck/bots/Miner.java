@@ -130,17 +130,24 @@ public class Miner extends Robot {
 
 
         /*
-         * If there is a resource deposit nearby, travel towards the best one.
+         * If there is a resource deposit nearby, travel towards the best one (but not if there are too many enemies).
          * Else, go towards target location.
-         *
-         * //TODO.. add not going to resource deposits if it is in range of enemy combatants?
          */
         determineTargetLocation(myLocation);
         Direction dir;
         if (ResourceLocations.size() > 0) { // there are resource deposits nearby
             LocationWithResources targetResource = ResourceLocations.get(0); // get the best one
-            rc.setIndicatorString(targetResource.loc + " ");
-            dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
+
+            RobotInfo[] combatantsNearResource = getCombatants(rc.senseNearbyRobots(targetResource.loc,
+                    RobotType.SOLDIER.actionRadiusSquared, enemy));
+            if (combatantsNearResource.length > 0){
+                // there are enemy combatants nearby the resource!
+                dir = new BestOppositePathfinding().getDirection(myLocation, combatantsNearResource[0].location, rc);
+                rc.setIndicatorString("enemies near resource!");
+            } else {
+                rc.setIndicatorString(targetResource.loc + " ");
+                dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
+            }
 
         } else { // no resource nearby!
             if (nearbyEnemyCombatants.length > 0) { // there are enemy combatants nearby!
@@ -178,7 +185,6 @@ public class Miner extends Robot {
             /*
              * We are close to target location, or we do not have one. Generate a new one.
              */
-
             //TODO... develop a more sophisticated target generation algorithm
             int x = (int) (rc.getMapWidth() * Math.random());
             int y = (int) (rc.getMapHeight() * Math.random());
