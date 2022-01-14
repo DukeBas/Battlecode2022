@@ -1,21 +1,24 @@
 package Trainwreck.bots;
 
 import Trainwreck.util.*;
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
+import battlecode.common.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public class Miner extends Robot {
     final int MAX_RESOURCE_LOCATIONS = 15; // at least 8
 
     public Miner(RobotController rc) {
         super(rc);
+
+        /*
+         * Generate semi-random initial starting location based on own location, map and archon.
+         */
+        // TODO.. something depending on archon, edges, layout, and symmetry?
+//        targetPathfindingLocation = new MapLocation(11, 11);
+        determineTargetLocation(rc.getLocation()); // temporarily just call regular set location function
     }
 
     /**
@@ -26,6 +29,12 @@ public class Miner extends Robot {
     @Override
     void run() throws GameActionException {
         MapLocation myLocation = rc.getLocation();
+
+        /*
+         * Get nearby enemies.
+         */
+        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(visionRadiusSquared, enemy);
+        RobotInfo[] nearbyEnemyCombatants = getCombatants(nearbyEnemies);
 
         /*
          * Communicate!
@@ -91,6 +100,7 @@ public class Miner extends Robot {
             ResourceLocations.add(best);
         }
 
+
         /*
          * Mine highest valued tiles around us first. Mining gold first.
          */
@@ -104,55 +114,64 @@ public class Miner extends Robot {
                 rc.mineGold(lwr.loc);
             }
         }
-        for (LocationWithResources lwr : MineableLocations) {
-            if (!rc.isActionReady()) {
-                // if no more action can be taken, break out of loop to save bytecode.
-                break;
+        if (rc.isActionReady()) { // we can still mine!
+            /*
+             * If an enemy archon is near, mine the last lead from deposits to hopefully starve the enemy of resources.
+             */
+            int minLeadValue = 1; // reduced to 0 if an enemy archon is near
+
+            for (RobotInfo bot : nearbyEnemies) {
+                if (bot.type == RobotType.ARCHON) {
+                    minLeadValue = 0;
+                    break;
+                }
             }
-            // mines until there is one lead left.
-            int leadLeft = rc.senseLead(lwr.loc);
-            while (leadLeft > 1 && rc.canMineLead(lwr.loc)) {
-                rc.mineLead(lwr.loc);
-                leadLeft--;
+
+            for (LocationWithResources lwr : MineableLocations) {
+                if (!rc.isActionReady()) {
+                    // if no more action can be taken, break out of loop to save bytecode.
+                    break;
+                }
+                // mines until there is one lead left.
+                int leadLeft = rc.senseLead(lwr.loc);
+                while (leadLeft > minLeadValue && rc.canMineLead(lwr.loc)) {
+                    rc.mineLead(lwr.loc);
+                    leadLeft--;
+                }
             }
         }
 
-        /*
-         * If there is a gold resource in sight, travel towards it. Otherwise, go to the largest lead deposit nearby.
-         * Since array is sorted, if the first place does not contain gold, none will. If the first place does
-         * contain gold, then it automatically also contains the most amount available nearby.
-         * Do not go to lead deposits with only 1 left. (see earlier comment for what locations we consider.)
-         * Help looking for enemy archons (and hopefully find more lead in the process as well) when there are
-         * no resources in sight.
-         */
-        Direction dir;
-        if (ResourceLocations.size() > 0) { // there are targets
-            LocationWithResources target = ResourceLocations.get(0);
-            if (target.gold == 0 && target.lead <= 1) { // No viable resources in range
-                if (targetArchonLocation != null) { // help with scouting!
-                    Pathfinding randomPathfinder = new WeightedRandomDirectionBasedPathfinding();
-                    dir = randomPathfinder.getDirection(myLocation, targetArchonLocation, rc);
-                } else {
-                    // move randomly
-                    Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
-                    dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
-                }
 
-            } else { // find direction to target
-                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
-                dir = pathfinder.getDirection(myLocation, target.loc, rc);
-                if (myLocation.equals(target.loc)) { // Stand still if at target
-                    dir = Direction.CENTER;
-                }
-            }
-        } else {
-            if (targetArchonLocation != null) { // help with scouting!
-                Pathfinding randomPathfinder = new WeightedRandomDirectionBasedPathfinding();
-                dir = randomPathfinder.getDirection(myLocation, targetArchonLocation, rc);
+        /*
+         * If there is a resource deposit nearby, travel towards the best one (but not if there are too many enemies).
+         * Else, go towards target location.
+         */
+        determineTargetLocation(myLocation);
+        Direction dir;
+        if (ResourceLocations.size() > 0) { // there are resource deposits nearby
+            LocationWithResources targetResource = ResourceLocations.get(0); // get the best one
+
+            RobotInfo[] combatantsNearResource = getCombatants(rc.senseNearbyRobots(targetResource.loc,
+                    RobotType.SOLDIER.actionRadiusSquared, enemy));
+            if (combatantsNearResource.length > 0) {
+                // there are enemy combatants nearby the resource!
+                dir = new BestOppositePathfinding().getDirection(myLocation, combatantsNearResource[0].location, rc);
+                rc.setIndicatorString("enemies near resource!");
             } else {
-                // move randomly
-                Pathfinding randomPathfinder = new RandomPreferLessRubblePathfinding();
-                dir = randomPathfinder.getDirection(myLocation, myLocation, rc);
+                rc.setIndicatorString(targetResource.loc + " ");
+                dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
+            }
+
+        } else { // no resource nearby!
+            if (nearbyEnemyCombatants.length > 0) { // there are enemy combatants nearby!
+                dir = new BestOppositePathfinding().getDirection(myLocation, nearbyEnemyCombatants[0].location, rc);
+                rc.setIndicatorString("enemies nearby!");
+                // force reset target location, so we do not keep going towards enemy
+                targetPathfindingLocation = null;
+
+            } else { // coast is clear
+                rc.setIndicatorString("Going toward " + targetPathfindingLocation);
+                dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetPathfindingLocation, rc);
             }
         }
 
@@ -167,14 +186,24 @@ public class Miner extends Robot {
     @Override
     void communicationStrategy() throws GameActionException {
         super.communicationStrategy(); // execute commands in super class
-
-        /*
-         * Update target, if one is available
-         */
-        targetArchonLocation = comms.getClosestPotentialEnemyArchonLocation();
     }
 
 
+    /**
+     * Checks if we are close to target location and sets a new one.
+     */
+    private void determineTargetLocation(MapLocation myLoc) {
+        // are we close to target?
+        if (targetPathfindingLocation == null || (myLoc.distanceSquaredTo(targetPathfindingLocation) <= 8)) {
+            /*
+             * We are close to target location, or we do not have one. Generate a new one.
+             */
+            //TODO... develop a more sophisticated target generation algorithm
+            int x = (int) (rc.getMapWidth() * Math.random());
+            int y = (int) (rc.getMapHeight() * Math.random());
+            targetPathfindingLocation = new MapLocation(x, y);
+        }
+    }
 }
 
 /**

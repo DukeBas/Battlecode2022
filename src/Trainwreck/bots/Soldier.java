@@ -30,7 +30,7 @@ public class Soldier extends Robot {
 
 
         /*
-         * Get nearby enemies.
+         * Get nearby robots.
          */
         RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(visionRadiusSquared, enemy);
         RobotInfo[] attackableEnemies = rc.senseNearbyRobots(actionRadiusSquared, enemy);
@@ -159,7 +159,7 @@ public class Soldier extends Robot {
                     pathfinder = new WeightedRandomDirectionBasedPathfinding();
                     dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
 
-                } else { // should realistically never happen that we do not know anything to travel towards.
+                } else { // only happens if an enemy archon has moved, and we have not spotted it yet.
                     // move semi randomly
                     pathfinder = new RandomPreferLessRubblePathfinding();
                     dir = pathfinder.getDirection(myLocation, myLocation, rc);
