@@ -4,30 +4,33 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
-import scala.collection.parallel.ParIterableLike;
+
+import java.util.HashMap;
+import java.util.PriorityQueue;
 
 
 public class AStarPathfinding implements Pathfinding{
 
     public MapLocation[] findPath(MapLocation source, MapLocation target, RobotController rc) throws GameActionException {
         int VisionRange = rc.getType().visionRadiusSquared;
-        MapLocation[] locations = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), VisionRange);
+        MapLocation[] locations = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), VisionRange); // maybe don't do this? Since we have to look for locations in the array as well now, maybe turn it into a map?
         if (!source.isWithinDistanceSquared(target, VisionRange)){
             // Change target if distance is larger than 20. How do we want to change the target, maybe checkpoints?
         }
-        AStarNode[] openList = new AStarNode[3600]; // Binary heap
-        AStarNode[] closedList = new AStarNode[3600];
+
+        PriorityQueue<AStarNode> open = new PriorityQueue<>();
+        HashMap<AStarNode, Boolean> closed = new HashMap<>(); // how to actually go about this is still a bit unknown
+
         int distance = Math.max(Math.abs(target.x-source.x), Math.abs(target.y-source.y));
         AStarNode startNode = new AStarNode(null, source, 0, distance*11, distance*11);
         AStarNode endNode = new AStarNode(null, target, Integer.MAX_VALUE, 0, Integer.MAX_VALUE);
 
-        AStarNode currentNode;
         AStarNode childNode = new AStarNode(null, null,0, 0, 0);
         MapLocation currentPlace;
-        openList[0] = startNode;
+        open.add(startNode); // add start node to open list
 
-        while(openList[0] != null){ //Check if list is empty
-            currentNode = openList[0]; //Get the node with the lowest f-cost, maybe other data structure
+        while(!open.isEmpty()){ //Check if list is empty
+            AStarNode currentNode = open.poll(); //Get the node with the lowest f-cost, maybe other data structure
             if (currentNode.place == endNode.place){
                 // We've found the end, we're done!
             }
