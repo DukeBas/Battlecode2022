@@ -1,4 +1,4 @@
-package Trainwreck.bots;
+package Trainwreck_Sprint1.bots;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
