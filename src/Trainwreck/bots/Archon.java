@@ -200,8 +200,12 @@ public class Archon extends Robot {
 
         }
 
-        if (numberOfSoldiers > SOLDIER_BATCH_SIZE) {
-            comms.setState(Status.ATTACK_SIGNAL, true);
+        // if the attack signal should be changed, flip it (because writing is
+        // like 100x as expensive as reading)
+        boolean shouldAttack = numberOfSoldiers > SOLDIER_BATCH_SIZE;
+        boolean isAttacking = comms.getState(Status.ATTACK_SIGNAL);
+        if (shouldAttack != isAttacking) {
+            comms.setState(Status.ATTACK_SIGNAL, shouldAttack);
         }
 
 

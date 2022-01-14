@@ -6,6 +6,7 @@ import battlecode.common.*;
 import static Trainwreck.util.Helper.isCombatUnit;
 
 public class Soldier extends Robot {
+    private boolean attacking = false;
 
     public Soldier(RobotController rc) {
         super(rc);
@@ -80,8 +81,11 @@ public class Soldier extends Robot {
          */
         Direction dir;
         if (comms.getState(Status.ATTACK_SIGNAL)) {
-            // Go to attack!!!
+            attacking = true;
+        }
 
+        if (attacking) {
+            // Go to attack!!!
             /*
              * Move to enemy if one is in vision range. Preferring target of attack.
              */
