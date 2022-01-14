@@ -178,7 +178,6 @@ public abstract class Robot {
 
     /**
      * Method to hold communication actions.
-     * Currently used
      */
     void communicationStrategy() throws GameActionException {
         comms.checkForEnemyArchons();
