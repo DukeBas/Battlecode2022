@@ -26,6 +26,13 @@ public class Watchtower extends Robot {
         if (enemies.length > 0) {
             while (i < enemies.length) {
                 new_enemy_score = 0;
+                if (enemies[i].getType() == RobotType.SAGE){
+                    new_enemy_score += 200;
+                }
+                else if (enemies[i].getType() == RobotType.SOLDIER){
+                    new_enemy_score += 100;
+                }
+                new_enemy_score += (100 - enemies[i].getHealth());
                 if (new_enemy_score > value_best_enemy){
                     best_enemy = i;
                 }
