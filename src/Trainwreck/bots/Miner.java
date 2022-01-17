@@ -53,6 +53,20 @@ public class Miner extends Robot {
          */
         MapLocation[] nearbyGold = rc.senseNearbyLocationsWithGold(this.visionRadiusSquared);
 
+        /*
+         * If an enemy archon is near, mine the last lead from deposits to hopefully starve the enemy of resources.
+         */
+        int mineLeadTo = 1;
+
+        // if closer to enemy base than to ours, mine it to drain their resources
+        MapLocation closestEnemyArchon = comms.getLocationClosestEnemyArchon();
+        if (closestEnemyArchon != null){
+            if (myLocation.distanceSquaredTo(comms.getLocationClosestFriendlyArchon()) >
+                    myLocation.distanceSquaredTo(closestEnemyArchon)){
+                mineLeadTo = 0;
+            }
+        }
+
         if (nearbyGold.length > 0) {
             for (MapLocation loc : nearbyGold) {
                 LocationWithResources lwr = new LocationWithResources(loc, rc.senseLead(loc), rc.senseGold(loc));
@@ -64,7 +78,8 @@ public class Miner extends Robot {
             }
         } else {
             // start by looking at locations with more than 1 lead in our action radius
-            MapLocation[] mineableLead = rc.senseNearbyLocationsWithLead(this.actionRadiusSquared, 2);
+            MapLocation[] mineableLead = rc.senseNearbyLocationsWithLead(this.actionRadiusSquared,
+                    mineLeadTo + 1);
             for (MapLocation loc : mineableLead) {
                 int lead = rc.senseLead(loc);
                 // can't go over maximum number yet, so unchecked
@@ -74,8 +89,10 @@ public class Miner extends Robot {
                 MineableLocations.add(lwr);
             }
 
-            // no lead currently mineable, look beyond action range. Only consider tiles with more than 1 lead.
-            MapLocation[] nearbyLead = rc.senseNearbyLocationsWithLead(this.visionRadiusSquared, 2);
+            // no lead currently mineable, look beyond action range.
+            // Only consider tiles with more than 1 lead nearby, unless close to enemy archon, then mine everything
+            MapLocation[] nearbyLead = rc.senseNearbyLocationsWithLead(this.visionRadiusSquared,
+                    mineLeadTo + 1);
             for (MapLocation loc : nearbyLead) {
                 if (ResourceLocations.size() >= MAX_RESOURCE_LOCATIONS) {
                     break; // prevent any more locations from being added.
@@ -115,18 +132,6 @@ public class Miner extends Robot {
             }
         }
         if (rc.isActionReady()) { // we can still mine!
-            /*
-             * If an enemy archon is near, mine the last lead from deposits to hopefully starve the enemy of resources.
-             */
-            int minLeadValue = 1; // reduced to 0 if an enemy archon is near
-
-            for (RobotInfo bot : nearbyEnemies) {
-                if (bot.type == RobotType.ARCHON) {
-                    minLeadValue = 0;
-                    break;
-                }
-            }
-
             for (LocationWithResources lwr : MineableLocations) {
                 if (!rc.isActionReady()) {
                     // if no more action can be taken, break out of loop to save bytecode.
@@ -134,7 +139,7 @@ public class Miner extends Robot {
                 }
                 // mines until there is one lead left.
                 int leadLeft = rc.senseLead(lwr.loc);
-                while (leadLeft > minLeadValue && rc.canMineLead(lwr.loc)) {
+                while (leadLeft > mineLeadTo && rc.canMineLead(lwr.loc)) {
                     rc.mineLead(lwr.loc);
                     leadLeft--;
                 }
