@@ -8,7 +8,12 @@ public class AStarOpen {
     private final int capacity; // capacity of array to use for the heap
     private int size; // current size of heap
     private final AStarNode[] heap; // do not use index 0 for ease of use
-    private final boolean[][] openSet = new boolean[61][61]; // max size of the map, do not use 0 indices
+
+    /*
+     * 2d array to keep location indices in heap. 0 indicates not in heap.
+     * Uses 61x61 because map is max 60x60 and we do not use 0 indices.
+     */
+    private final int[][] openSet = new int[61][61];
 
 
     /**
@@ -37,17 +42,16 @@ public class AStarOpen {
         heap[++size] = node;
         int current = size;
 
+        /*
+         * Add to open set
+         */
+        openSet[node.place.x][node.place.y] = current;
+
 
         while (current != 1 && heap[current].compareTo(heap[parentPos(current)]) < 0) {
             swap(current, parentPos(current));
             current = parentPos(current);
         }
-
-
-        /*
-         * Add to open set
-         */
-        openSet[node.place.x][node.place.y] = true;
     }
 
     /**
@@ -57,7 +61,7 @@ public class AStarOpen {
      * @return whether node is open
      */
     public boolean isOpen(AStarNode node) {
-        return openSet[node.place.x][node.place.y];
+        return openSet[node.place.x][node.place.y] > 0;
     }
 
     /**
@@ -92,15 +96,8 @@ public class AStarOpen {
      * @return position of node
      */
     private int getPosNode(AStarNode node) {
-        //TODO turn bool array into position array and update positions in array each time
-        for (int i = 1; i <= size; i++) {
-            if (heap[i] == node) {
-                // same pointer! Node found!
-                return i;
-            }
-        }
-
-        return -1;
+        int pos = openSet[node.place.x][node.place.y];
+        return pos > 0 ? pos : -1;
     }
 
     /**
@@ -123,7 +120,7 @@ public class AStarOpen {
         /*
          * Remove from open set
          */
-        openSet[node.place.x][node.place.y] = false;
+        openSet[node.place.x][node.place.y] = 0;
 
         return node;
     }
@@ -178,6 +175,11 @@ public class AStarOpen {
     private void swap(int a, int b) {
         AStarNode temp = heap[a];
 
+        // swap locations in arrays
+        openSet[heap[a].place.x][heap[a].place.y] = b;
+        openSet[heap[b].place.x][heap[b].place.y] = a;
+
+        // do the swap
         heap[a] = heap[b];
         heap[b] = temp;
     }
@@ -220,7 +222,7 @@ public class AStarOpen {
         StringBuilder out = new StringBuilder("[");
 
         for (int i = 1; i <= size; i++) {
-            if (isPowerOfTwo(i + 1) && i < size){
+            if (isPowerOfTwo(i + 1) && i < size) {
                 out.append(heap[i].FCost).append(" | ");
             } else {
                 out.append(heap[i].FCost).append(" ");
@@ -242,7 +244,7 @@ public class AStarOpen {
      * @return whether the number is a power of 2
      */
     private boolean isPowerOfTwo(int n) {
-        return (int) (Math.ceil((Math.log(n) / Math.log(2))))
-                == (int) (Math.floor(((Math.log(n) / Math.log(2)))));
+        final double v = Math.log(n) / Math.log(2);
+        return (int) (Math.ceil(v)) == (int) (Math.floor(v));
     }
 }
