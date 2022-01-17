@@ -35,13 +35,13 @@ public strictfp class RobotPlayer {
                 robot = new Laboratory(rc);
                 break;
             case MINER:
-                robot = new Miner(rc);
+                robot = new Builder(rc);
                 break;
             case SAGE:
                 robot = new Sage(rc);
                 break;
             case SOLDIER:
-                robot = new Soldier(rc);
+                robot = new Builder(rc);
                 break;
             case WATCHTOWER:
                 robot = new Watchtower(rc);

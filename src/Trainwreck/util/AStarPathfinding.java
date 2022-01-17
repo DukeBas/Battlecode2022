@@ -51,9 +51,9 @@ public class AStarPathfinding implements Pathfinding {
                 for (int j = currentNode.place.y - 1; j < currentNode.place.y + 2; j++) { //Loop over all Adjacent nodes
                     MapLocation childPlace = new MapLocation(i, j);
 
-                    if ((rc.onTheMap(childPlace)) && (childPlace.isWithinDistanceSquared(target, VisionRange)) && (!closed.contains(childPlace))) { // Should only check pos
+                    if ((childPlace.isWithinDistanceSquared(target, VisionRange)) && (!closed.contains(childPlace))) { // Should only check pos
                         distance = Math.max(Math.abs(target.x - childPlace.x), Math.abs(target.y - childPlace.y));
-                        childNode = new AStarNode(currentNode, childPlace, currentNode.GCost + rc.senseRubble(currentNode.place), distance, 0);
+                        childNode = new AStarNode(currentNode, childPlace, currentNode.GCost + 1, distance, 0); //rc.senseRubble(currentNode.place)
                         childNode.FCost = childNode.HCost + childNode.GCost;
 
                         if (open.isOpen(childNode)) {
