@@ -220,7 +220,11 @@ public class AStarOpen {
         StringBuilder out = new StringBuilder("[");
 
         for (int i = 1; i <= size; i++) {
-            out.append(heap[i].FCost).append(" ");
+            if (isPowerOfTwo(i + 1)){
+                out.append(heap[i].FCost).append(" | ");
+            } else {
+                out.append(heap[i].FCost).append(" ");
+            }
         }
 
         if (out.length() > 1) {
@@ -229,5 +233,16 @@ public class AStarOpen {
         out.append("]");
 
         return out.toString();
+    }
+
+    /**
+     * Used by printing function
+     *
+     * @param n number to check
+     * @return whether the number is a power of 2
+     */
+    private boolean isPowerOfTwo(int n) {
+        return (int) (Math.ceil((Math.log(n) / Math.log(2))))
+                == (int) (Math.floor(((Math.log(n) / Math.log(2)))));
     }
 }
