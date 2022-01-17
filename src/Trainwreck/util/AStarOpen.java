@@ -101,6 +101,17 @@ public class AStarOpen {
     }
 
     /**
+     * Gets the AStarNode at a position.
+     *
+     * @param x coordinate
+     * @param y coordinate
+     * @return AStarNode at that location if it is known
+     */
+    public AStarNode getNodeAtLoc(int x, int y) {
+        return heap[openSet[x][y]];
+    }
+
+    /**
      * Pops the current highest priority node from the heap (get and removes from heap).
      *
      * @return next A* node
