@@ -112,7 +112,7 @@ public class Soldier extends Robot {
         /*
          * Move if it is possible.
          */
-        rc.setIndicatorString("Moving to " + dir);
+//        rc.setIndicatorString("Moving to " + dir);
         if (!dir.equals(Direction.CENTER) && rc.canMove(dir)) {
             rc.move(dir);
         }

@@ -77,8 +77,15 @@ public class AStarPathfinding implements Pathfinding {
 //        if (true) {
 //            // Change target if distance is larger than 20. How do we want to change the target
 //        }
-        ArrayList<MapLocation> path = findPath(source, target, rc);
-        return source.directionTo(path.get(path.size()-1));
+
+        try {
+            ArrayList<MapLocation> path = findPath(source, target, rc);
+            return source.directionTo(path.get(path.size() - 1));
+        } catch (Exception e) {
+            rc.setIndicatorString("" + e);
+        }
+
+        return Direction.CENTER;
     }
 }
 
