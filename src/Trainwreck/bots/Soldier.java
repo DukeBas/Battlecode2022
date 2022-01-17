@@ -12,6 +12,8 @@ public class Soldier extends Robot {
     private final static double ENEMY_COUNTING_FACTOR_SKIRMISH = 2; // when comparing friendly to enemy numbers
     private final static double FRIENDLY_OVERWHELMING_FACTOR = 3; // when are our forces overwhelming?
 
+    private boolean needToHeal;
+
     public Soldier(RobotController rc) {
         super(rc);
     }
@@ -90,6 +92,9 @@ public class Soldier extends Robot {
          *      This is in the hope that more allies will reinforce us, so soldiers stick together.
          * If there are a lot more enemies in vision range than friendlies, retreat (unless near friendly archon).
          * If number of nearby friendlies is much greater than enemies in vision range, move closer to overwhelm.
+         *
+         * Play very defensively, only really skirmishing, if there is no attack signal
+         * Retreat back to closest friendly archon when hurt.
          */
         Direction dir;
         Pathfinding pathfinder;
@@ -106,11 +111,26 @@ public class Soldier extends Robot {
         int numAttackableEnemies = attackableEnemies.length;
         int numEnemies = nearbyEnemies.length;
 
-        /*
-         * Play very defensively, only really skirmishing, if there is no attack signal
-         */
+        int maxHP = RobotType.SOLDIER.getMaxHealth(1);
+        if (needToHeal) { // we previously found out we needed to heal, are we back to full already?
+            if (rc.getHealth() >= maxHP) {
+                needToHeal = false;
+            }
+        } else {
+            // do we need to retreat to heal?
+            if (attacking) { // attack signal! do not retreat easily!
+                needToHeal = rc.getHealth() < maxHP * 0.2;
+            } else { // just skirmishing, try not to die!
+                needToHeal = rc.getHealth() < maxHP * 0.5;
+            }
+        }
 
-        if (numEnemies > 0) { // enemies withing vision range!
+        if (needToHeal) { // rest up near an archon
+            pathfinder = new SpotNearArchonPathfinding();
+            dir = pathfinder.getDirection(myLocation, comms.getLocationClosestFriendlyArchon(), rc);
+            rc.setIndicatorString("Returning to base to heal! ");
+        } else if (numEnemies > 0) { // we can fight!
+            // enemies withing vision range!
 
             if (numAttackableEnemies > 0) { // enemies in attackable range!
 
@@ -172,8 +192,6 @@ public class Soldier extends Robot {
                 }
 
 
-
-
             } else { // enemies in vision range, but none are attackable currently.
                 rc.setIndicatorString("Enemy not attackable, but in vision");
                 /*
@@ -205,7 +223,6 @@ public class Soldier extends Robot {
 
 //        rc.setIndicatorString(comms.getState(Status.ATTACK_SIGNAL) + " " + dir);
 //        rc.setIndicatorString("cur: " + targetArchonLocation + " close " + comms.getLocationClosestEnemyArchon());
-
 
         /*
          * Move if it is possible.

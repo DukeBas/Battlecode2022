@@ -13,37 +13,44 @@ public class SpotNearArchonPathfinding implements Pathfinding {
 
     @Override
     public Direction getDirection(MapLocation source, MapLocation target, RobotController rc) throws GameActionException {
-        MapLocation targetSpot = source; // where we want to go to, initialise as current spot
-        int bestPenaltyScore = Integer.MAX_VALUE; // lower score is better
 
-        /*
-         * Consider 5x5 square around us
-         */
-        for (int dx = -2; dx <= 2; dx++) {
-            for (int dy = -2; dy <= 2; dy++) {
-                MapLocation loc = source.translate(dx, dy);
+        // Travel towards archon if we can not see it yet
+        if (source.distanceSquaredTo(target) > rc.getType().visionRadiusSquared) {
+            return new WeightedRandomDirectionBasedPathfinding().getDirection(source, target, rc);
+        } else {
 
-                // is the location valid?
-                if (!rc.onTheMap(loc) || // is it on the map?
-                        !rc.canSenseLocation(loc) || // can we sense the rubble there?
-                        !locationInArchonRange(target, loc) || // is it in range of the archon?
-                        blockingArchon(target, loc) || // is it blocking the archon?
-                        rc.isLocationOccupied(loc)) // is the location already occupied?
-                {
-                    // location is not valid!
-                    continue; // skip to the next one
-                }
+            // we are near the archon
+            MapLocation targetSpot = source; // where we want to go to, initialise as current spot
+            int bestPenaltyScore = rc.senseRubble(targetSpot); // lower score is better
 
-                // is the location better?
-                int rubble = rc.senseRubble(loc);
-                int score = calcScore(target, loc, rubble);
-                if (score < bestPenaltyScore) {
-                    // new better spot found!
-                    targetSpot = loc;
-                    bestPenaltyScore = score;
+            /*
+             * Consider 5x5 square around us
+             */
+            for (int dx = -2; dx <= 2; dx++) {
+                for (int dy = -2; dy <= 2; dy++) {
+                    MapLocation loc = source.translate(dx, dy);
+
+                    // is the location valid?
+                    if (!rc.onTheMap(loc) || // is it on the map?
+                            !rc.canSenseLocation(loc) || // can we sense the rubble there?
+                            !locationInArchonRange(target, loc) || // is it in range of the archon?
+                            blockingArchon(target, loc) || // is it blocking the archon?
+                            rc.isLocationOccupied(loc)) // is the location already occupied?
+                    {
+                        // location is not valid!
+                        continue; // skip to the next one
+                    }
+
+                    // is the location better?
+                    int rubble = rc.senseRubble(loc);
+                    int score = calcScore(target, loc, rubble);
+                    if (score < bestPenaltyScore) {
+                        // new better spot found!
+                        targetSpot = loc;
+                        bestPenaltyScore = score;
+                    }
                 }
             }
-        }
 
 //        rc.setIndicatorString(targetSpot + " " + blockingArchon(target, source) + " "+
 //                        !rc.canSenseLocation(loc) + " " +
@@ -52,8 +59,9 @@ public class SpotNearArchonPathfinding implements Pathfinding {
 //                !rc.onTheMap(targetSpot) + " " +
 //                );
 
-        Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
-        return pathfinder.getDirection(source, targetSpot, rc);
+            Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
+            return pathfinder.getDirection(source, targetSpot, rc);
+        }
     }
 
     /**
