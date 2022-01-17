@@ -7,8 +7,9 @@ import static Trainwreck.util.Helper.isCombatUnit;
 
 public class Soldier extends Robot {
     private boolean attacking = false;
-    private final static int NUM_ENEMIES_MANY = 5; // when do we say there are many enemies nearby?
-    private final static double ENEMY_COUNTING_FACTOR = 0.8; // when comparing friendly to enemy numbers
+    private final static int NUM_ENEMIES_MANY = 4; // when do we say there are many enemies nearby?
+    private final static double ENEMY_COUNTING_FACTOR_AGGRESSIVE = 0.8; // when comparing friendly to enemy numbers
+    private final static double ENEMY_COUNTING_FACTOR_SKIRMISH = 2; // when comparing friendly to enemy numbers
     private final static double FRIENDLY_OVERWHELMING_FACTOR = 3; // when are our forces overwhelming?
 
     public Soldier(RobotController rc) {
@@ -34,6 +35,7 @@ public class Soldier extends Robot {
          * Get nearby robots.
          */
         RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(visionRadiusSquared, enemy);
+        RobotInfo[] nearbyCombatants = getCombatants(nearbyEnemies);
         RobotInfo[] attackableEnemies = rc.senseNearbyRobots(actionRadiusSquared, enemy);
         RobotInfo[] nearbyFriendlies = rc.senseNearbyRobots(visionRadiusSquared, friendly);
 
@@ -97,39 +99,44 @@ public class Soldier extends Robot {
         }
 
         rc.setIndicatorString("start");
-        if (attacking) { // go to attack!!!
 
-            // get number of enemies and friendlies to decide what to do
-            int numFriendlies = nearbyFriendlies.length;
-            int numAttackableEnemies = attackableEnemies.length;
-            int numEnemies = nearbyEnemies.length;
+        // get number of enemies and friendlies to decide what to do
+        int numFriendlies = nearbyFriendlies.length;
+        int numCombatants = nearbyCombatants.length;
+        int numAttackableEnemies = attackableEnemies.length;
+        int numEnemies = nearbyEnemies.length;
 
-            if (numEnemies > 0) { // enemies withing vision range!
+        /*
+         * Play very defensively, only really skirmishing, if there is no attack signal
+         */
 
-                if (numAttackableEnemies > 0) { // enemies in attackable range!
+        if (numEnemies > 0) { // enemies withing vision range!
 
-                    boolean archonNearby = myLocation.distanceSquaredTo(comms.getLocationClosestFriendlyArchon())
-                            <= actionRadiusSquared;
+            if (numAttackableEnemies > 0) { // enemies in attackable range!
 
-                    /*
-                     * If there are too many enemy units compared to the number of friendly units, retreat.
-                     * But if there is a friendly archon nearby, do not do this! Repel the enemy or die trying!
-                     */
-                    if (!archonNearby && numAttackableEnemies > NUM_ENEMIES_MANY &&
-                            numEnemies * ENEMY_COUNTING_FACTOR > numFriendlies) { // too many enemies nearby! Retreat!
+                boolean archonNearby = myLocation.distanceSquaredTo(comms.getLocationClosestFriendlyArchon())
+                        <= actionRadiusSquared;
+
+                /*
+                 * If there are too many enemy units compared to the number of friendly units, retreat.
+                 * But if there is a friendly archon nearby, do not do this! Repel the enemy or die trying!
+                 */
+                if (attacking) { // attack signal is here! I am attacking! Act more aggressively
+                    if (!archonNearby && numCombatants > NUM_ENEMIES_MANY &&
+                            numCombatants * ENEMY_COUNTING_FACTOR_AGGRESSIVE > numFriendlies) {
+                        // too many enemies nearby! Retreat!
                         rc.setIndicatorString("Retreating!");
                         pathfinder = new BestOppositePathfinding();
                         dir = pathfinder.getDirection(myLocation,
                                 toAttack, // ideally we would run from closest enemy, but this is good enough
                                 rc);
                     }
-
                     /*
                      * If there are comparable numbers of enemies and friendlies, try to stay
                      * out of range of too many enemies while preferring lighter tiles so we can attack more often.
                      */
                     else if (numFriendlies < numEnemies * FRIENDLY_OVERWHELMING_FACTOR) { // stand and fight!
-                        rc.setIndicatorString("Standing to fight!");
+                        rc.setIndicatorString("Standing to fight! Friends: " + numFriendlies + " En. Combats.: " + numCombatants);
                         // find a good nearby spot to fight from!
                         pathfinder = new FightingGroundPathfinding();
                         dir = pathfinder.getDirection(myLocation, toAttack, rc);
@@ -144,38 +151,55 @@ public class Soldier extends Robot {
                         dir = pathfinder.getDirection(myLocation, toAttack, rc);
                     }
 
-                } else { // enemies in vision range, but none are attackable currently.
-                    rc.setIndicatorString("Enemy not attackable, but in vision");
+                } else { // skirmishing, let's try to stay safe
+                    if (numCombatants * ENEMY_COUNTING_FACTOR_SKIRMISH > numFriendlies) { // Retreat!
+                        rc.setIndicatorString("Retreating!");
+                        pathfinder = new BestOppositePathfinding();
+                    }
                     /*
-                     * Move to closer favorable tile, if the number of enemy combatants is not too much
-                     * compared to friendly forces, else retreat
+                     * If there are comparable numbers of enemies and friendlies, try to stay
+                     * out of range of too many enemies while preferring lighter tiles so we can attack more often.
                      */
-                    pathfinder = new WeightedRandomDirectionBasedPathfinding();
-                    dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
+                    else { // stand and fight!
+                        rc.setIndicatorString("Standing to fight! Friends: " + numFriendlies + " En. Combats.: " + numCombatants);
+                        // find a good nearby spot to fight from!
+                        pathfinder = new FightingGroundPathfinding();
 
-                    // TODO... better than just travelling towards enemy!!
+                    }
+                    dir = pathfinder.getDirection(myLocation,
+                            toAttack, // ideally we would run from closest enemy, but this is good enough
+                            rc);
                 }
 
-            } else { // no enemies spotted!
-                rc.setIndicatorString("No enemies spotted! Travelling towards " + targetArchonLocation);
+
+
+
+            } else { // enemies in vision range, but none are attackable currently.
+                rc.setIndicatorString("Enemy not attackable, but in vision");
                 /*
-                 * If we have a target location, travel towards it
+                 * Move to closer favorable tile, if the number of enemy combatants is not too much
+                 * compared to friendly forces, else retreat
                  */
-                if (targetArchonLocation != null) {
-                    pathfinder = new WeightedRandomDirectionBasedPathfinding();
-                    dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
+                pathfinder = new WeightedRandomDirectionBasedPathfinding();
+                dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
 
-                } else { // only happens if an enemy archon has moved, and we have not spotted it yet.
-                    // move semi randomly
-                    pathfinder = new RandomPreferLessRubblePathfinding();
-                    dir = pathfinder.getDirection(myLocation, myLocation, rc);
-                }
+                // TODO... better than just travelling towards enemy!!
             }
 
-        } else { // Wait for attack signal!
-            rc.setIndicatorString("Waiting for attack signal!");
-            pathfinder = new SpotNearArchonPathfinding();
-            dir = pathfinder.getDirection(myLocation, comms.getLocationClosestFriendlyArchon(), rc);
+        } else { // no enemies spotted!
+            rc.setIndicatorString("No enemies spotted! Travelling towards " + targetArchonLocation);
+            /*
+             * If we have a target location, travel towards it
+             */
+            if (targetArchonLocation != null) {
+                pathfinder = new WeightedRandomDirectionBasedPathfinding();
+                dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
+
+            } else { // only happens if an enemy archon has moved, and we have not spotted it yet.
+                // move semi randomly
+                pathfinder = new RandomPreferLessRubblePathfinding();
+                dir = pathfinder.getDirection(myLocation, myLocation, rc);
+            }
         }
 
 
