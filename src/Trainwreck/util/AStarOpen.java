@@ -220,7 +220,7 @@ public class AStarOpen {
         StringBuilder out = new StringBuilder("[");
 
         for (int i = 1; i <= size; i++) {
-            if (isPowerOfTwo(i + 1)){
+            if (isPowerOfTwo(i + 1) && i < size){
                 out.append(heap[i].FCost).append(" | ");
             } else {
                 out.append(heap[i].FCost).append(" ");
