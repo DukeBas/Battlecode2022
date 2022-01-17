@@ -187,7 +187,7 @@ public class FirstCommunication implements Communication {
         for (MapLocation loc : archonLocations) {
             out.append(loc.toString()).append(" ");
         }
-        rc.setIndicatorString(out.toString());
+//        rc.setIndicatorString(out.toString());
 
         MapLocation closestArchon = archonLocations[0];
         int closestDistance = myLoc.distanceSquaredTo(closestArchon);

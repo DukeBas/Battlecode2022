@@ -10,6 +10,9 @@ import java.util.HashSet;
 
 
 public class AStarPathfinding implements Pathfinding {
+    private int mapWidth = 0;
+    private int mapHeight = 0;
+
 
     public ArrayList<MapLocation> retrace_steps(AStarNode start, AStarNode end) {
         AStarNode currentNode = end;
@@ -28,7 +31,7 @@ public class AStarPathfinding implements Pathfinding {
 //            // Change target if distance is larger than 20. How do we want to change the target, maybe checkpoints?
 //        }
 
-        AStarOpen open = new AStarOpen(5*VisionRange); //Actually 4*Range + 4*sqrt(Range)+1
+        AStarOpen open = new AStarOpen(5 * VisionRange); //Actually 4*Range + 4*sqrt(Range)+1
         HashSet<MapLocation> closed = new HashSet<>(300);
         // TODO overwrite hash function
 
@@ -51,7 +54,8 @@ public class AStarPathfinding implements Pathfinding {
                 for (int j = currentNode.place.y - 1; j < currentNode.place.y + 2; j++) { //Loop over all Adjacent nodes
                     MapLocation childPlace = new MapLocation(i, j);
 
-                    if ((childPlace.isWithinDistanceSquared(target, VisionRange)) && (!closed.contains(childPlace))) { // Should only check pos
+                    if (locationOnMap(childPlace) && childPlace.isWithinDistanceSquared(target, VisionRange) &&
+                            (!closed.contains(childPlace))) { // Should only check pos
                         distance = Math.max(Math.abs(target.x - childPlace.x), Math.abs(target.y - childPlace.y));
                         childNode = new AStarNode(currentNode, childPlace, currentNode.GCost + 1, distance, 0); //rc.senseRubble(currentNode.place)
                         childNode.FCost = childNode.HCost + childNode.GCost;
@@ -61,8 +65,7 @@ public class AStarPathfinding implements Pathfinding {
                             if (childNode.compareToG(openNode) < 0) {
                                 open.updateNode(openNode, childNode.GCost, childNode.FCost, childNode.previous);
                             }
-                        }
-                        else {
+                        } else {
                             open.insert(childNode);
                         }
                     }
@@ -78,6 +81,10 @@ public class AStarPathfinding implements Pathfinding {
 //            // Change target if distance is larger than 20. How do we want to change the target
 //        }
 
+        // set map width and height
+        mapWidth = rc.getMapWidth();
+        mapHeight = rc.getMapHeight();
+
         try {
             ArrayList<MapLocation> path = findPath(source, target, rc);
             return source.directionTo(path.get(path.size() - 1));
@@ -86,6 +93,10 @@ public class AStarPathfinding implements Pathfinding {
         }
 
         return Direction.CENTER;
+    }
+
+    private boolean locationOnMap(MapLocation loc){
+        return loc.x >= 0 && loc.x < mapWidth && loc.y >= 0 && loc.y < mapHeight;
     }
 }
 
