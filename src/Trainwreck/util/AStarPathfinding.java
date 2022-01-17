@@ -88,7 +88,16 @@ public class AStarPathfinding implements Pathfinding{
     }
 }
 
+/**
+ * Record type for an A* node
+ */
 class AStarNode{
+    public AStarNode previous;
+    public final MapLocation place; // place does not change
+    public int GCost; // TODO does this value ever change?
+    public int HCost; // TODO does this value ever change?
+    public int FCost; // TODO does this value ever change?
+
     AStarNode(AStarNode previous, MapLocation place, int GCost, int HCost, int FCost){
         this.previous = previous;
         this.place = place;
@@ -96,9 +105,45 @@ class AStarNode{
         this.HCost = HCost;
         this.FCost = FCost;
     }
-    AStarNode previous;
-    MapLocation place;
-    int GCost;
-    int HCost;
-    int FCost;
+}
+
+
+/**
+ * Uses minHeap and 2d pointer array to quickly get highest priority node and search if a node has been seen before.
+ */
+class AStarOpen {
+
+    private final int capacity; // capacity of array to use for the heap
+    private int size; // current size of heap
+    private final AStarNode[] heap;
+
+
+    /**
+     * Constructor
+     */
+    public AStarOpen(int maxCapacity){
+        this.capacity = maxCapacity;
+        this.heap = new AStarNode[capacity];
+    }
+
+    public void addNode(AStarNode node){
+        //TODO
+    }
+
+    /**
+     * Update ???
+     * @param node
+     * @param NUMBER_TO_UPDATE
+     */
+    public void updateNode(AStarNode node, int NUMBER_TO_UPDATE){ //TODO... what number(s) do we need to update in the heap?
+        //TODO
+    }
+
+    /**
+     * Gets the current highest priority node from the heap
+     * @return next a* node
+     */
+    public AStarNode popBest(){
+        return null; //TODO
+    }
 }
