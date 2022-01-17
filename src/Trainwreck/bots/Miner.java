@@ -8,19 +8,54 @@ import java.util.Collections;
 import java.util.List;
 
 public class Miner extends Robot {
-    final int MAX_RESOURCE_LOCATIONS = 15; // at least 8
+    private final static int MAX_RESOURCE_LOCATIONS = 15; // at least 8
 
     private boolean needToHeal;
+
+    private boolean hardSearch = false; // go to target location without stopping for lead tiles under...
+    private final static int MIN_LEAD_HARD_SEARCH = 5;
+
+    private final int mapWidth;
+    private final int mapHeight;
 
     public Miner(RobotController rc) {
         super(rc);
 
+        mapWidth = rc.getMapWidth();
+        mapHeight = rc.getMapHeight();
+
         /*
-         * Generate semi-random initial starting location based on own location, map and archon.
+         * Miner finding lead strategy, this doesn't work entirely, as the counting is off when miners are destroyed.
          */
-        // TODO.. something depending on archon, edges, layout, and symmetry?
-//        targetPathfindingLocation = new MapLocation(11, 11);
-        determineTargetLocation(rc.getLocation()); // temporarily just call regular set location function
+        try {
+            hardSearch = true; // really do go to target position!
+            int IAmMinerNumber = comms.getUnitCounter(builtByID, RobotType.MINER);
+//            rc.setIndicatorString("I am miner number: " + IAmMinerNumber);
+            if (IAmMinerNumber == 0) {
+                // First miner, head towards middle
+                targetPathfindingLocation = new MapLocation(mapWidth / 2, mapHeight / 2);
+
+            } else if (IAmMinerNumber == 1) {
+                // Second miner, head towards closest corner
+                targetPathfindingLocation = getClosestCorner(rc.getLocation());
+
+            } else if (IAmMinerNumber % 3 == 0) {
+                // Every third miner, towards enemy
+                targetPathfindingLocation = comms.getLocationClosestEnemyArchon();
+                if (targetPathfindingLocation == null) {
+                    targetPathfindingLocation = comms.getClosestPotentialEnemyArchonLocation();
+                }
+                determineTargetLocation(); // if target still null, use default
+            } else {
+                // Else use default
+                determineTargetLocation();
+            }
+
+        } catch (Exception e) {
+            rc.setIndicatorString("could not get miner number");
+
+            determineTargetLocation();
+        }
     }
 
     /**
@@ -58,7 +93,8 @@ public class Miner extends Robot {
         /*
          * If an enemy archon is near, mine the last lead from deposits to hopefully starve the enemy of resources.
          */
-        int mineLeadTo = 1;
+        // do not stop for little amounts of lead when we really need to get somewhere
+        int mineLeadTo = hardSearch ? MIN_LEAD_HARD_SEARCH : 1;
 
         // if closer to enemy base than to ours, mine it to drain their resources
         MapLocation closestEnemyArchon = comms.getLocationClosestEnemyArchon();
@@ -165,14 +201,14 @@ public class Miner extends Robot {
          * If there is a resource deposit nearby, travel towards the best one (but not if there are too many enemies).
          * Else, go towards target location.
          */
-        determineTargetLocation(myLocation);
+        determineTargetLocation();
         Direction dir;
         if (needToHeal) { // we need to go heal!
             Pathfinding pathfinder = new SpotNearArchonPathfinding();
             dir = pathfinder.getDirection(myLocation, comms.getLocationClosestFriendlyArchon(), rc);
             rc.setIndicatorString("Returning to base to heal! ");
-        } else { // we do not need to heal, focus on mining!
 
+        } else { // we do not need to heal, focus on mining!
             if (ResourceLocations.size() > 0) { // there are resource deposits nearby
                 LocationWithResources targetResource = ResourceLocations.get(0); // get the best one
 
@@ -183,7 +219,7 @@ public class Miner extends Robot {
                     dir = new BestOppositePathfinding().getDirection(myLocation, combatantsNearResource[0].location, rc);
                     rc.setIndicatorString("enemies near resource!");
                 } else {
-                    rc.setIndicatorString(targetResource.loc + " ");
+                    rc.setIndicatorString("heading towards " + targetResource.loc + " to mine");
                     dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
                 }
 
@@ -218,17 +254,53 @@ public class Miner extends Robot {
     /**
      * Checks if we are close to target location and sets a new one.
      */
-    private void determineTargetLocation(MapLocation myLoc) {
+    private void determineTargetLocation() {
+        MapLocation myLoc = rc.getLocation();
         // are we close to target?
         if (targetPathfindingLocation == null || (myLoc.distanceSquaredTo(targetPathfindingLocation) <= 8)) {
             /*
              * We are close to target location, or we do not have one. Generate a new one.
              */
+//            rc.setIndicatorString("Setting new target position");
+            hardSearch = false;
             //TODO... develop a more sophisticated target generation algorithm
             int x = (int) (rc.getMapWidth() * Math.random());
             int y = (int) (rc.getMapHeight() * Math.random());
             targetPathfindingLocation = new MapLocation(x, y);
         }
+    }
+
+    /**
+     * Returns closest corner on map.
+     *
+     * @param myLoc location to consider the closest corner to
+     * @return closest corner location
+     */
+    MapLocation getClosestCorner(MapLocation myLoc) {
+        MapLocation out = new MapLocation(0, 0); // default to bottom left
+        int lowestDist = myLoc.distanceSquaredTo(out);
+
+        MapLocation topLeft = new MapLocation(0, mapHeight - 1);
+        int distToTopLeft = myLoc.distanceSquaredTo(topLeft);
+        if (distToTopLeft < lowestDist) {
+            lowestDist = distToTopLeft;
+            out = topLeft;
+        }
+
+        MapLocation topRight = new MapLocation(mapWidth - 1, mapHeight - 1);
+        int distToTopRight = myLoc.distanceSquaredTo(topRight);
+        if (distToTopRight < lowestDist) {
+            lowestDist = distToTopRight;
+            out = topRight;
+        }
+
+        MapLocation bottomRight = new MapLocation(mapWidth - 1, 0);
+        int distToBottomRight = myLoc.distanceSquaredTo(bottomRight);
+        if (distToBottomRight < lowestDist) {
+            out = bottomRight;
+        }
+
+        return out;
     }
 }
 
