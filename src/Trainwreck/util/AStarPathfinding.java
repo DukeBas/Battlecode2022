@@ -6,10 +6,26 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.PriorityQueue;
 
 
 public class AStarPathfinding implements Pathfinding{
+
+    public MapLocation[] retrace_steps(AStarNode start, AStarNode end)
+    {
+        AStarNode currentNode = end;
+        MapLocation[] path = new MapLocation[70];
+        int i = 0;
+        while (currentNode != start) {
+            path[i] = currentNode.place;
+            currentNode = currentNode.previous;
+            i++;
+        }
+        path[i] = start.place;
+        return path;
+    }
 
     public MapLocation[] findPath(MapLocation source, MapLocation target, RobotController rc) throws GameActionException {
         int VisionRange = rc.getType().visionRadiusSquared;
@@ -19,30 +35,43 @@ public class AStarPathfinding implements Pathfinding{
         }
 
         PriorityQueue<AStarNode> open = new PriorityQueue<>();
-        HashMap<AStarNode, Boolean> closed = new HashMap<>(); // how to actually go about this is still a bit unknown
+        HashSet<MapLocation> openset = new HashSet<>(200);
+        HashSet<MapLocation> closed = new HashSet<>(200); // how to actually go about this is still a bit unknown
+        // TODO overwrite hash function
+        // TODO set
 
         int distance = Math.max(Math.abs(target.x-source.x), Math.abs(target.y-source.y));
-        AStarNode startNode = new AStarNode(null, source, 0, distance*11, distance*11);
+        AStarNode startNode = new AStarNode(null, source, 0, distance, distance);
         AStarNode endNode = new AStarNode(null, target, Integer.MAX_VALUE, 0, Integer.MAX_VALUE);
 
         AStarNode childNode = new AStarNode(null, null,0, 0, 0);
+        AStarNode openNode;
         MapLocation currentPlace;
         open.add(startNode); // add start node to open list
+        openset.add(startNode.place);
 
         while(!open.isEmpty()){ //Check if list is empty
             AStarNode currentNode = open.poll(); //Get the node with the lowest f-cost, maybe other data structure
             if (currentNode.place == endNode.place){
-                // We've found the end, we're done!
+                return retrace_steps(startNode, currentNode);
             }
 
+            open.remove(currentNode);
+            openset.remove(currentNode.place);
+            closed.add(currentNode.place);
             for (int i = currentNode.place.x-1 ; i < currentNode.place.x+2 ; i++){ //Loop over all Adjacent nodes
                 for (int j = currentNode.place.y-1 ; j < currentNode.place.y+2 ; j++){ //Loop over all Adjacent nodes
                     MapLocation childPlace = new MapLocation(i, j);
-                    if ((childPlace.isWithinDistanceSquared(target, VisionRange))){ // And if not on ClosedList
-                        childNode = new AStarNode(currentNode, childPlace, currentNode.GCost + rc.senseRubble(currentNode.place) , currentNode.HCost - rc.senseRubble(currentNode.place), childNode.HCost + childNode.GCost); //TODO
-                        // If childNode is already in openList and GCost is better now than in the list, replace.
-                        // Otherwise, add childNode to openList.
-                        // Move currentNode to closedList
+                    if ((childPlace.isWithinDistanceSquared(target, VisionRange)) & (!closed.contains(childPlace))){ // Should only check pos
+                        childNode = new AStarNode(currentNode, childPlace, currentNode.GCost + rc.senseRubble(currentNode.place) , currentNode.HCost - 1, childNode.HCost + childNode.GCost);
+                        if (openset.contains(childPlace)){ //Should only check pos
+
+                            // If childNode is already in openList and GCost is better now than in the list, replace.
+                        }
+                        else {
+                            open.add(childNode);
+                            openset.add(childNode.place);
+                        }
                     }
                 }
             }
