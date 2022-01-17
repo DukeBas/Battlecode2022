@@ -61,7 +61,8 @@ public class AStarOpen {
     }
 
     /**
-     * Updates a node with new information.
+     * Updates a node with new information. MODIFIES NODE ITSELF, NO NEED TO MODIFY NODE BEFOREHAND.
+     * Assumes new G and F costs are lower, as there would be no need to update if they're the same.
      *
      * @param node     to update
      * @param new_G    new G cost
@@ -69,13 +70,43 @@ public class AStarOpen {
      * @param new_prev new previous A* node
      */
     public void updateNode(AStarNode node, int new_G, int new_F, AStarNode new_prev) { // update based on new F-cost
-        //TODO
+        /*
+         * We assume new costs are always lower, so swap up until we are either at the top or node above us is smaller
+         */
+        int pos = getPosNode(node);
+        node.GCost = new_G;
+        node.FCost = new_F;
+        node.previous = new_prev;
+
+        while (pos != 1 && heap[parentPos(pos)].compareTo(heap[pos]) > 0) {
+            int parentPos = parentPos(pos);
+            swap(pos, parentPos);
+            pos = parentPos;
+        }
+    }
+
+    /**
+     * Gets the position of a certain node in the heap. Returns -1 if it is not in.
+     *
+     * @param node to get the position of
+     * @return position of node
+     */
+    private int getPosNode(AStarNode node) {
+        //TODO turn bool array into position array and update positions in array each time
+        for (int i = 1; i <= size; i++) {
+            if (heap[i] == node) {
+                // same pointer! Node found!
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /**
      * Pops the current highest priority node from the heap (get and removes from heap).
      *
-     * @return next a* node
+     * @return next A* node
      */
     public AStarNode popBest() {
         /*
