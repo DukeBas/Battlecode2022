@@ -117,6 +117,12 @@ public class Archon extends Robot {
         Direction dir = buildingDirection();
 
         if (dir != null) { // there is room to build!
+            // build a sage if possible
+            if (rc.canBuildRobot(RobotType.SAGE, dir)){
+                rc.buildRobot(RobotType.SAGE, dir);
+            }
+
+
             /*
              * Check if there is an enemy combat unit in range
              */
