@@ -21,7 +21,8 @@ public class SpotNearArchonPathfinding implements Pathfinding {
 
             // we are near the archon
             MapLocation targetSpot = source; // where we want to go to, initialise as current spot
-            int bestPenaltyScore = rc.senseRubble(targetSpot); // lower score is better
+            // lower score is better, add 5 to current so we do not accidentally get stuck near archon
+            int bestPenaltyScore = 5 + calcScore(target, targetSpot, rc.senseRubble(targetSpot));
 
             /*
              * Consider 5x5 square around us
@@ -58,6 +59,8 @@ public class SpotNearArchonPathfinding implements Pathfinding {
 //                !rc.onTheMap(targetSpot) + " " +
 //                !rc.onTheMap(targetSpot) + " " +
 //                );
+
+            rc.setIndicatorString(targetSpot.toString() + "");
 
             Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
             return pathfinder.getDirection(source, targetSpot, rc);
