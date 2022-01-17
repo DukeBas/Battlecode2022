@@ -17,6 +17,7 @@ public class AStarOpen {
     public AStarOpen(int maxCapacity) {
         this.capacity = maxCapacity + 1; // +1 to account for index 0 being unused
         this.heap = new AStarNode[capacity];
+        size = 0;
     }
 
     /**
@@ -36,7 +37,8 @@ public class AStarOpen {
         heap[++size] = node;
         int current = size;
 
-        while (heap[current].compareTo(heap[parentPos(current)]) > 0) {
+
+        while (current != 1 && heap[current].compareTo(heap[parentPos(current)]) < 0) {
             swap(current, parentPos(current));
             current = parentPos(current);
         }
@@ -81,8 +83,11 @@ public class AStarOpen {
          */
         AStarNode node = heap[1];
         heap[1] = heap[size--];
-        minHeapify(1);
+        if (!isEmpty()) {
+            minHeapify(1);
+        }
 
+        System.out.println("Popping A* node with F-Cost: " + node.FCost);
 
         /*
          * Remove from open set
@@ -113,15 +118,15 @@ public class AStarOpen {
     }
 
 
-    /**
-     * Gets position of right child of an element at a position
-     *
-     * @param pos of element to get the right child of
-     * @return position right child
-     */
-    private int rightChildPos(int pos) {
-        return 2 * pos + 1;
-    }
+//    /**
+//     * Gets position of right child of an element at a position
+//     *
+//     * @param pos of element to get the right child of
+//     * @return position right child
+//     */
+//    private int rightChildPos(int pos) {
+//        return 2 * pos + 1;
+//    }
 
     /**
      * Checks whether an element at a position is a leaf node (i.e. has no children)
@@ -147,13 +152,23 @@ public class AStarOpen {
     }
 
     /**
+     * Method to get if data structure is empty.
+     *
+     * @return whether there are no items in open
+     */
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    /**
      * MinHeapify node at pos.
      *
-     * @param pos to minheapify
+     * @param pos to minHeapify
      */
     private void minHeapify(int pos) {
         // If the node is a non-leaf node and greater
         // than any of its child
+//        System.out.println(pos + " " + isLeaf(pos) + " " + (pos > (size / 2)) + " " + size);
         if (!isLeaf(pos)) {
             AStarNode current = heap[pos];
             int posLeft = leftChildPos(pos);
@@ -170,5 +185,18 @@ public class AStarOpen {
         }
     }
 
+    public String printableFCosts() {
+        StringBuilder out = new StringBuilder("[");
 
+        for (int i = 1; i <= size; i++) {
+            out.append(heap[i].FCost).append(" ");
+        }
+
+        if (out.length() > 1) {
+            out.delete(out.length() - 1, out.length()); // remove last space
+        }
+        out.append("]");
+
+        return out.toString();
+    }
 }
