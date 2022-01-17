@@ -6,6 +6,7 @@ import battlecode.common.*;
 import static Trainwreck.util.Helper.isCombatUnit;
 
 public class Soldier extends Robot {
+    private boolean attacking = false;
     private final static int NUM_ENEMIES_MANY = 5; // when do we say there are many enemies nearby?
     private final static double ENEMY_COUNTING_FACTOR = 0.8; // when comparing friendly to enemy numbers
     private final static double FRIENDLY_OVERWHELMING_FACTOR = 3; // when are our forces overwhelming?
@@ -90,8 +91,13 @@ public class Soldier extends Robot {
          */
         Direction dir;
         Pathfinding pathfinder;
+
+        if (comms.getState(Status.ATTACK_SIGNAL)) {
+            attacking = true;
+        }
+
         rc.setIndicatorString("start");
-        if (comms.getState(Status.ATTACK_SIGNAL)) { // go to attack!!!
+        if (attacking) { // go to attack!!!
 
             // get number of enemies and friendlies to decide what to do
             int numFriendlies = nearbyFriendlies.length;
