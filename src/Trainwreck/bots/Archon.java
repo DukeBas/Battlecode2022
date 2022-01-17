@@ -4,8 +4,6 @@ import Trainwreck.util.Constants;
 import Trainwreck.util.Status;
 import battlecode.common.*;
 
-import java.util.Objects;
-
 import static Trainwreck.util.Helper.isCombatUnit;
 
 
@@ -34,10 +32,26 @@ public class Archon extends Robot {
     private static final int ARCHON_HIGH_MINER_LIMIT = 15;
 
     /**
+     * Max number of builders that one archon should make.
+     */
+    private static final int ARCHON_BUILDER_LIMIT = 3;
+
+    /**
      * Minimum number of soldiers before they start charging towards an enemy
      * base.
      */
     private static final int SOLDIER_BATCH_SIZE = 15;
+
+    /**
+     * The minimum price from which archons are allowed to build whatever they
+     * want, without having to check for other archons' priority.
+     */
+    private static final int MIN_FREE_BUILD_PRICE = 400;
+
+    /**
+     * The turn from which builders will also be made.
+     */
+    private static final int BUILDER_START_TURN = 300;
 
     public Archon(RobotController rc) throws GameActionException {
         super(rc);
@@ -110,7 +124,7 @@ public class Archon extends Robot {
         int numberOfMiners = comms.getUnitCounter(ownID, RobotType.MINER);
 ////        int numberOfSages = comms.getUnitCounter(ownID, RobotType.SAGE);
         int numberOfSoldiers = comms.getUnitCounter(ownID, RobotType.SOLDIER);
-////      int numberOfBuilders = comms.getUnitCounter(ownID, RobotType.BUILDER);
+        int numberOfBuilders = comms.getUnitCounter(ownID, RobotType.BUILDER);
         comms.resetAllUnitCounters(ownID);
 
 
@@ -139,11 +153,9 @@ public class Archon extends Robot {
                 return;
             }
 
-            // No enemy combatants in range. Do we have priority to build this turn? Or do we have many resources?
-            boolean priority = priorityCheck();
-            if (priority || rc.getTeamLeadAmount(friendly) >= 150) { // we can build!
-
-                rc.setIndicatorString(priority + " " + rc.getTeamLeadAmount(friendly));
+            // No enemy combatants in range. Do we have permission to build this turn?
+            if (checkBuildPriority()) { // we can build!
+                //rc.setIndicatorString(turnCount + " " + rc.getTeamLeadAmount(friendly));
 
                 int minersNeeded = ARCHON_LOW_MINER_LIMIT;
                 int nearbyLead = rc.senseNearbyLocationsWithLead(visionRadiusSquared).length;
@@ -153,6 +165,7 @@ public class Archon extends Robot {
                 }
 
                 // Strategy beyond depends on how far we are in the game.
+                RobotType toBuild = RobotType.SOLDIER; // default
                 if (turnCount < 100) {
                     /*
                      * Early game strategy, prioritise miners
@@ -160,22 +173,18 @@ public class Archon extends Robot {
                     // do we need more miners?
                     if (numberOfMiners < minersNeeded) {
                         // We need more miners! Try to build one!
-                        if (rc.canBuildRobot(RobotType.MINER, dir)) {
-                            rc.buildRobot(RobotType.MINER, dir);
-                        }
-
+                        toBuild = RobotType.MINER;
                     } else {
                         // We have enough miners! Let's make some soldiers!
-                        if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
-                            rc.buildRobot(RobotType.SOLDIER, dir);
-                        }
+                        toBuild = RobotType.SOLDIER;
                     }
                 } else {
                     /*
-                     * Late(r) game strategy. Mainly build soldiers, replenish miners every now and then.
+                     * Late(r) game strategy. Mainly build soldiers, replenish
+                     * miners every now and then. Also make some builders to
+                     * get labs and watchtowers out, as a more defensive
+                     * strategy.
                      */
-
-                    RobotType toBuild = RobotType.SOLDIER; // default
 
                     // do we need more miners? If so, higher chance to make one
                     if (numberOfMiners < minersNeeded) {
@@ -183,27 +192,30 @@ public class Archon extends Robot {
                         if (Math.random() < 0.10) {
                             toBuild = RobotType.MINER;
                         }
+                    } else if (numberOfBuilders < ARCHON_BUILDER_LIMIT) {
+                        toBuild = RobotType.BUILDER;
                     } else {
                         // we do not need miners, we might still want another one!
                         if (Math.random() < 0.01) {
                             toBuild = RobotType.MINER;
                         }
                     }
+                }
 
-                    // build the desired robot if we can
-                    if (rc.canBuildRobot(toBuild, dir)) {
-                        rc.buildRobot(toBuild, dir);
-                    }
-
+                // build the desired robot if we can
+                if (rc.canBuildRobot(toBuild, dir)) {
+                    rc.buildRobot(toBuild, dir);
                 }
             }
-
         }
 
         if (numberOfSoldiers > SOLDIER_BATCH_SIZE) {
             comms.setState(Status.ATTACK_SIGNAL, true);
         }
 
+        if (turnCount > BUILDER_START_TURN) {
+            comms.setState(Status.DEFENSIVE_BUILD_SIGNAL, true);
+        }
 
 //        // TESTING PURPOSES:
 //        rc.setIndicatorString("Miners: " + numberOfMiners +
@@ -213,13 +225,20 @@ public class Archon extends Robot {
     }
 
     /**
-     * Checks whether this archon has priority this turn.
+     * Checks whether this archon has permission this turn.
      *
-     * @return whether this archon has priority now.
+     * @return whether this archon has permission now.
      */
-    private boolean priorityCheck() throws GameActionException {
-        final int totalFriendlyArchons = comms.getNumberFriendlyArchons();
-        return turnCount % totalFriendlyArchons == turnOrder; // priority rotates evenly
+    private boolean checkBuildPriority() throws GameActionException {
+        int totalFriendlyArchons = comms.getNumberFriendlyArchons();
+        // you still want to keep building soldiers/miners occasionally
+        boolean buildersPriority = comms.getState(Status.DEFENSIVE_BUILD_SIGNAL) &&
+            rng.nextInt() % 8 != 0;
+        boolean priority = !buildersPriority && turnCount % totalFriendlyArchons == turnOrder;
+
+        // priority rotates evenly; but if there's a ton of lead, you can build
+        // anyway
+        return priority || rc.getTeamLeadAmount(friendly) >= MIN_FREE_BUILD_PRICE;
     }
 
 

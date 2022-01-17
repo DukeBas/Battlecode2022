@@ -6,7 +6,7 @@ package Trainwreck.util;
  */
 public enum Status {
     ATTACK_SIGNAL,
-    Unused2,
+    DEFENSIVE_BUILD_SIGNAL,
     Unused3,
     Unused4,
     Unused5,
