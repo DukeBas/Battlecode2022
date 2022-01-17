@@ -148,13 +148,18 @@ public class Archon extends Robot {
             boolean priority = priorityCheck();
             if (priority || rc.getTeamLeadAmount(friendly) >= 150) { // we can build!
 
-                rc.setIndicatorString(priority + " " + rc.getTeamLeadAmount(friendly));
+//                rc.setIndicatorString(priority + " " + rc.getTeamLeadAmount(friendly));
 
                 int numFriendlyArchons = comms.getNumberFriendlyArchons();
-                int minersAllArchons = (int) Math.round(((mapWidth + mapHeight) / 2.0 - 20) * 0.4) + 6;
+                int minersAllArchons = (int) Math.round(((mapWidth + mapHeight) / 2.0 - 20) * 0.5) + 6;
+                if (Math.min(mapWidth, mapHeight) <= 25){
+                    // small map, correct for it
+                    minersAllArchons -= 4;
+                }
                 int minersNeeded = minersAllArchons / numFriendlyArchons;
+                rc.setIndicatorString(minersAllArchons + " in total. Personally: " + minersNeeded);
                 int nearbyLead = rc.senseNearbyLocationsWithLead(visionRadiusSquared).length;
-                if (nearbyLead > 20) {
+                if (nearbyLead > 15) {
                     // Lots of lead available! Get more miners!
                     minersNeeded = ARCHON_HIGH_MINER_LIMIT;
                 }
