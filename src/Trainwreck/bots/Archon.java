@@ -122,21 +122,21 @@ public class Archon extends Robot {
              */
             boolean enemyInRange = false;
             RobotInfo[] enemiesInRange = rc.senseNearbyRobots(visionRadiusSquared, enemy);
-            for (RobotInfo bot : enemiesInRange) {
-                if (isCombatUnit(bot.getType())) {
-                    // Enemy combat unit in range!!!
-                    enemyInRange = true;
-                    break;
-                }
-            }
+            RobotInfo[] combatants = getCombatants(enemiesInRange);
+            RobotInfo[] friendliesInRange = rc.senseNearbyRobots(visionRadiusSquared, friendly);
+            RobotInfo[] friendlyCombatants = getCombatants(friendliesInRange);
 
-            if (enemyInRange) {
+            if (combatants.length >= 3 && friendlyCombatants.length < 2 && comms.getNumberFriendlyArchons() > 1) {
+                // we are lost! do not continue to waste resources
+                return;
+            } else if (combatants.length > 0) {
                 // There was an enemy in range! Build a soldier if we can!
                 if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
                     rc.buildRobot(RobotType.SOLDIER, dir);
                 }
                 return;
             }
+
 
             // No enemy combatants in range. Do we have priority to build this turn? Or do we have many resources?
             boolean priority = priorityCheck();
