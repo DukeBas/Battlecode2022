@@ -10,6 +10,8 @@ import java.util.List;
 public class Miner extends Robot {
     final int MAX_RESOURCE_LOCATIONS = 15; // at least 8
 
+    private boolean needToHeal;
+
     public Miner(RobotController rc) {
         super(rc);
 
@@ -60,9 +62,9 @@ public class Miner extends Robot {
 
         // if closer to enemy base than to ours, mine it to drain their resources
         MapLocation closestEnemyArchon = comms.getLocationClosestEnemyArchon();
-        if (closestEnemyArchon != null){
+        if (closestEnemyArchon != null) {
             if (myLocation.distanceSquaredTo(comms.getLocationClosestFriendlyArchon()) >
-                    myLocation.distanceSquaredTo(closestEnemyArchon)){
+                    myLocation.distanceSquaredTo(closestEnemyArchon)) {
                 mineLeadTo = 0;
             }
         }
@@ -145,6 +147,18 @@ public class Miner extends Robot {
                 }
             }
         }
+        /*
+         * Do we need to go heal?
+         */
+        int maxHP = RobotType.MINER.getMaxHealth(1);
+        if (needToHeal) { // we previously found out we needed to heal, are we back to full already?
+            if (rc.getHealth() >= maxHP) {
+                needToHeal = false;
+            }
+        } else {
+            // do we need to retreat to heal?
+            needToHeal = rc.getHealth() < maxHP * 0.4;
+        }
 
 
         /*
@@ -153,37 +167,44 @@ public class Miner extends Robot {
          */
         determineTargetLocation(myLocation);
         Direction dir;
-        if (ResourceLocations.size() > 0) { // there are resource deposits nearby
-            LocationWithResources targetResource = ResourceLocations.get(0); // get the best one
+        if (needToHeal) { // we need to go heal!
+            Pathfinding pathfinder = new SpotNearArchonPathfinding();
+            dir = pathfinder.getDirection(myLocation, comms.getLocationClosestFriendlyArchon(), rc);
+            rc.setIndicatorString("Returning to base to heal! ");
+        } else { // we do not need to heal, focus on mining!
 
-            RobotInfo[] combatantsNearResource = getCombatants(rc.senseNearbyRobots(targetResource.loc,
-                    RobotType.SOLDIER.actionRadiusSquared, enemy));
-            if (combatantsNearResource.length > 0) {
-                // there are enemy combatants nearby the resource!
-                dir = new BestOppositePathfinding().getDirection(myLocation, combatantsNearResource[0].location, rc);
-                rc.setIndicatorString("enemies near resource!");
-            } else {
-                rc.setIndicatorString(targetResource.loc + " ");
-                dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
+            if (ResourceLocations.size() > 0) { // there are resource deposits nearby
+                LocationWithResources targetResource = ResourceLocations.get(0); // get the best one
+
+                RobotInfo[] combatantsNearResource = getCombatants(rc.senseNearbyRobots(targetResource.loc,
+                        RobotType.SOLDIER.actionRadiusSquared, enemy));
+                if (combatantsNearResource.length > 0) {
+                    // there are enemy combatants nearby the resource!
+                    dir = new BestOppositePathfinding().getDirection(myLocation, combatantsNearResource[0].location, rc);
+                    rc.setIndicatorString("enemies near resource!");
+                } else {
+                    rc.setIndicatorString(targetResource.loc + " ");
+                    dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
+                }
+
+            } else { // no resource nearby!
+                if (nearbyEnemyCombatants.length > 0) { // there are enemy combatants nearby!
+                    dir = new BestOppositePathfinding().getDirection(myLocation, nearbyEnemyCombatants[0].location, rc);
+                    rc.setIndicatorString("enemies nearby!");
+                    // force reset target location, so we do not keep going towards enemy
+                    targetPathfindingLocation = null;
+
+                } else { // coast is clear
+                    rc.setIndicatorString("Going toward " + targetPathfindingLocation);
+                    dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetPathfindingLocation, rc);
+                }
             }
 
-        } else { // no resource nearby!
-            if (nearbyEnemyCombatants.length > 0) { // there are enemy combatants nearby!
-                dir = new BestOppositePathfinding().getDirection(myLocation, nearbyEnemyCombatants[0].location, rc);
-                rc.setIndicatorString("enemies nearby!");
-                // force reset target location, so we do not keep going towards enemy
-                targetPathfindingLocation = null;
-
-            } else { // coast is clear
-                rc.setIndicatorString("Going toward " + targetPathfindingLocation);
-                dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetPathfindingLocation, rc);
-            }
-        }
-
-        // try to move toward target, if not already there
+            // try to move toward target, if not already there
 //        rc.setIndicatorString("canMove(" + dir + ") = " + rc.canMove(dir));
-        if (!dir.equals(Direction.CENTER) && rc.canMove(dir)) { // do not move if already at target
-            rc.move(dir);
+            if (!dir.equals(Direction.CENTER) && rc.canMove(dir)) { // do not move if already at target
+                rc.move(dir);
+            }
         }
     }
 
