@@ -89,7 +89,7 @@ public class AStarPathfinding implements Pathfinding {
 /**
  * Record type for an A* node
  */
-class AStarNode {
+class AStarNode implements Comparable<AStarNode>{
     public AStarNode previous;
     public final MapLocation place; // place does not change
     public int GCost;
@@ -102,5 +102,13 @@ class AStarNode {
         this.GCost = GCost;
         this.HCost = HCost;
         this.FCost = FCost;
+    }
+
+    /*
+     * Compare nodes based on f cost
+     */
+    @Override
+    public int compareTo(AStarNode o) {
+        return Integer.compare(this.FCost, o.FCost);
     }
 }
