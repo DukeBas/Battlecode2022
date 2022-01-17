@@ -30,7 +30,6 @@ public class Archon extends Robot {
     /**
      * Max number of miners that one archon should make.
      */
-    private static final int ARCHON_LOW_MINER_LIMIT = 10;
     private static final int ARCHON_HIGH_MINER_LIMIT = 15;
 
     /**
@@ -145,9 +144,11 @@ public class Archon extends Robot {
 
                 rc.setIndicatorString(priority + " " + rc.getTeamLeadAmount(friendly));
 
-                int minersNeeded = ARCHON_LOW_MINER_LIMIT;
+                int numFriendlyArchons = comms.getNumberFriendlyArchons();
+                int minersAllArchons = (int) Math.round(((mapWidth + mapHeight) / 2.0 - 20) * 0.4) + 6;
+                int minersNeeded = minersAllArchons / numFriendlyArchons;
                 int nearbyLead = rc.senseNearbyLocationsWithLead(visionRadiusSquared).length;
-                if (nearbyLead > minersNeeded * 4) {
+                if (nearbyLead > 20) {
                     // Lots of lead available! Get more miners!
                     minersNeeded = ARCHON_HIGH_MINER_LIMIT;
                 }
@@ -234,7 +235,7 @@ public class Archon extends Robot {
     void communicationStrategy() throws GameActionException {
         super.communicationStrategy();
 
-        rc.setIndicatorString(turnCount + "");
+//        rc.setIndicatorString(turnCount + "");
         if (turnCount == 1) {
             commsFirstRound();
         }
