@@ -7,23 +7,59 @@ public class AStarOpen {
 
     private final int capacity; // capacity of array to use for the heap
     private int size; // current size of heap
-    private final AStarNode[] heap;
+    private final AStarNode[] heap; // do not use index 0 for ease of use
+    private final boolean[][] openSet = new boolean[61][61]; // max size of the map, do not use 0 indices
 
 
     /**
-     * Constructor
+     * Constructor.
      */
     public AStarOpen(int maxCapacity) {
-        this.capacity = maxCapacity;
+        this.capacity = maxCapacity + 1; // +1 to account for index 0 being unused
         this.heap = new AStarNode[capacity];
     }
 
-    public void addNode(AStarNode node) {
-        //TODO
+    /**
+     * Inserts a node into the minHeap.
+     *
+     * @param node to insert
+     */
+    public void insert(AStarNode node) {
+        /*
+         * Insert into heap
+         */
+
+        if (size >= capacity) {
+            return; // Heap full! Ignore this node :(
+        }
+
+        heap[++size] = node;
+        int current = size;
+
+        while (heap[current].compareTo(heap[parentPos(current)]) > 0) {
+            swap(current, parentPos(current));
+            current = parentPos(current);
+        }
+
+
+        /*
+         * Add to open set
+         */
+        openSet[node.place.x][node.place.y] = true;
     }
 
     /**
-     * Updates a node with new information
+     * Checks whether a node is open.
+     *
+     * @param node to check
+     * @return whether node is open
+     */
+    public boolean isOpen(AStarNode node) {
+        return openSet[node.place.x][node.place.y];
+    }
+
+    /**
+     * Updates a node with new information.
      *
      * @param node     to update
      * @param new_G    new G cost
@@ -35,16 +71,29 @@ public class AStarOpen {
     }
 
     /**
-     * Gets the current highest priority node from the heap
+     * Pops the current highest priority node from the heap (get and removes from heap).
      *
      * @return next a* node
      */
     public AStarNode popBest() {
-        return null; //TODO
+        /*
+         * Pop from minHeap
+         */
+        AStarNode node = heap[1];
+        heap[1] = heap[size--];
+        minHeapify(1);
+
+
+        /*
+         * Remove from open set
+         */
+        openSet[node.place.x][node.place.y] = false;
+
+        return node;
     }
 
     /**
-     * Gets position of parent element of an element at a position
+     * Gets position of parent element of an element at a position.
      *
      * @param pos of element to get parent of
      * @return position parent element
@@ -54,7 +103,7 @@ public class AStarOpen {
     }
 
     /**
-     * Gets position of left child of an element at a position
+     * Gets position of left child of an element at a position.
      *
      * @param pos of element to get the left child of
      * @return position left child
@@ -96,5 +145,30 @@ public class AStarOpen {
         heap[a] = heap[b];
         heap[b] = temp;
     }
+
+    /**
+     * MinHeapify node at pos.
+     *
+     * @param pos to minheapify
+     */
+    private void minHeapify(int pos) {
+        // If the node is a non-leaf node and greater
+        // than any of its child
+        if (!isLeaf(pos)) {
+            AStarNode current = heap[pos];
+            int posLeft = leftChildPos(pos);
+            int posRight = posLeft + 1;
+            if (current.compareTo(heap[posLeft]) > 0 || current.compareTo(heap[posRight]) > 0) {
+                if (heap[posLeft].compareTo(heap[posRight]) < 0) { // swap with the left child and heapify left child
+                    swap(pos, posLeft);
+                    minHeapify(posLeft);
+                } else { // swap with the right child and heapify the right child
+                    swap(pos, posRight);
+                    minHeapify(posRight);
+                }
+            }
+        }
+    }
+
 
 }

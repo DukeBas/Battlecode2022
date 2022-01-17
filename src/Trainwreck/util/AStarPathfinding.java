@@ -87,7 +87,7 @@ public class AStarPathfinding implements Pathfinding {
 }
 
 /**
- * Record type for an A* node
+ * Record(ish) type for an A* node
  */
 class AStarNode implements Comparable<AStarNode>{
     public AStarNode previous;
