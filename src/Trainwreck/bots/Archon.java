@@ -142,7 +142,7 @@ public class Archon extends Robot {
                 }
 
                 // Strategy beyond depends on how far we are in the game.
-                if (turnCount < 100) {
+                if (turnCount < 50) {
                     /*
                      * Early game strategy, prioritise miners
                      */

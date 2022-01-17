@@ -3,6 +3,7 @@ package Trainwreck.bots;
 import Trainwreck.util.*;
 import battlecode.common.*;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Objects;
 
@@ -82,34 +83,36 @@ public class Soldier extends Robot {
          * Move to enemy if one is in vision range. Preferring target of attack.
          */
         Direction dir;
-        if (nearbyEnemies.length > 0) {
-            // move towards an enemy.
-            Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
-            if (toAttack != null) { // prefer the enemy we are attacking currently
-                dir = pathfinder.getDirection(myLocation, toAttack, rc);
-            } else {
-                dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
-            }
-        } else {
-            /*
-             * If we have a target location, travel towards it
-             */
-            if (targetArchonLocation != null) {
-                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
-                dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
-            } else {
-                // move semi randomly
-                Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
-                dir = pathfinder.getDirection(myLocation, myLocation, rc);
-            }
-        }
+        Pathfinding pathfinder = new AStarPathfinding();
+        dir = pathfinder.getDirection(myLocation, new MapLocation(myLocation.x + 2, myLocation.y - 2), rc);
+//        if (nearbyEnemies.length > 0) {
+//            // move towards an enemy.
+//            Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
+//            if (toAttack != null) { // prefer the enemy we are attacking currently
+//                dir = pathfinder.getDirection(myLocation, toAttack, rc);
+//            } else {
+//                dir = pathfinder.getDirection(myLocation, nearbyEnemies[0].location, rc);
+//            }
+//        } else {
+//            /*
+//             * If we have a target location, travel towards it
+//             */
+//            if (targetArchonLocation != null) {
+//                Pathfinding pathfinder = new WeightedRandomDirectionBasedPathfinding();
+//                dir = pathfinder.getDirection(myLocation, targetArchonLocation, rc);
+//            } else {
+//                // move semi randomly
+//                Pathfinding pathfinder = new RandomPreferLessRubblePathfinding();
+//                dir = pathfinder.getDirection(myLocation, myLocation, rc);
+//            }
+//        }
 
 //        rc.setIndicatorString("cur: " + targetArchonLocation + " close " + comms.getLocationClosestEnemyArchon());
 
         /*
          * Move if it is possible.
          */
-//        rc.setIndicatorString("Moving to " + dir);
+        rc.setIndicatorString("Moving to " + dir);
         if (!dir.equals(Direction.CENTER) && rc.canMove(dir)) {
             rc.move(dir);
         }

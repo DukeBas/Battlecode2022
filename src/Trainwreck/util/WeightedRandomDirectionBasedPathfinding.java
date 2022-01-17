@@ -16,7 +16,7 @@ public class WeightedRandomDirectionBasedPathfinding implements Pathfinding {
     private double preferenceStrength = 20; // Higher means less rubble is preferred even more.
 
     @Override
-    public Direction getDirection(MapLocation source, MapLocation target, RobotController rc) {
+    public Direction getDirection(MapLocation source, MapLocation target, RobotController rc) throws GameActionException {
         /*
          * Prepare weighted directions
          */

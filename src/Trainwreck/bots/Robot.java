@@ -149,6 +149,7 @@ public abstract class Robot {
                 // Oh no! It looks like we did something illegal in the Battlecode world. You should
                 // handle GameActionExceptions judiciously, in case unexpected events occur in the game
                 // world. Remember, uncaught exceptions cause your robot to explode!
+                throw e;
                 System.out.println(ownType + " GameAction-Exception");
                 e.printStackTrace();
 
