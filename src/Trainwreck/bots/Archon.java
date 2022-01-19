@@ -164,7 +164,7 @@ public class Archon extends Robot {
 
                 int numFriendlyArchons = comms.getNumberFriendlyArchons();
                 int minersAllArchons = (int) Math.round(((mapWidth + mapHeight) / 2.0 - 20) * 0.5) + 6;
-                if (Math.min(mapWidth, mapHeight) <= 25){
+                if (Math.min(mapWidth, mapHeight) <= 25) {
                     // small map, correct for it
                     minersAllArchons -= 4;
                 }
@@ -186,10 +186,8 @@ public class Archon extends Robot {
                     if (numberOfMiners < minersNeeded) {
                         // We need more miners! Try to build one!
                         toBuild = RobotType.MINER;
-                    } else {
-                        // We have enough miners! Let's make some soldiers!
-                        toBuild = RobotType.SOLDIER;
                     }
+
                 } else {
                     /*
                      * Late(r) game strategy. Mainly build soldiers, replenish
@@ -214,13 +212,13 @@ public class Archon extends Robot {
                     }
                 }
 
-                    // build the desired robot if we can
-                    if (rc.canBuildRobot(toBuild, dir)) {
-                        rc.buildRobot(toBuild, dir);
-                    }
-
+                // build the desired robot if we can
+                if (rc.canBuildRobot(toBuild, dir)) {
+                    rc.buildRobot(toBuild, dir);
                 }
+
             }
+        }
 
 
         // if the attack signal should be changed, flip it (because writing is
@@ -252,7 +250,7 @@ public class Archon extends Robot {
         int totalFriendlyArchons = comms.getNumberFriendlyArchons();
         // you still want to keep building soldiers/miners occasionally
         boolean buildersPriority = comms.getState(Status.DEFENSIVE_BUILD_SIGNAL) &&
-            rng.nextInt() % 8 != 0;
+                rng.nextInt() % 8 != 0;
         boolean priority = !buildersPriority && turnCount % totalFriendlyArchons == turnOrder;
 
         // priority rotates evenly; but if there's a ton of lead, you can build
