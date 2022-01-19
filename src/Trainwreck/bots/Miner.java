@@ -15,6 +15,9 @@ public class Miner extends Robot {
     private boolean hardSearch = false; // go to target location without stopping for lead tiles under...
     private final static int MIN_LEAD_HARD_SEARCH = 5;
 
+    // what r^2 of an archon we consider friendly base
+    private final static int FRIENDLY_BASE_RANGE = 34;
+
     private final int mapWidth;
     private final int mapHeight;
 
@@ -96,14 +99,15 @@ public class Miner extends Robot {
         // do not stop for little amounts of lead when we really need to get somewhere
         int mineLeadTo = hardSearch ? MIN_LEAD_HARD_SEARCH : 1;
 
-        // if closer to enemy base than to ours, mine it to drain their resources
-        MapLocation closestEnemyArchon = comms.getLocationClosestEnemyArchon();
-        if (closestEnemyArchon != null) {
-            if (myLocation.distanceSquaredTo(comms.getLocationClosestFriendlyArchon()) >
-                    myLocation.distanceSquaredTo(closestEnemyArchon)) {
-                mineLeadTo = 0;
-            }
+        /*
+         * Mine the map dry, except for close to our base
+         */
+        if (myLocation.distanceSquaredTo(comms.getLocationClosestFriendlyArchon()) >
+                FRIENDLY_BASE_RANGE) {
+            mineLeadTo = 0; // not near friendly base, mine it dry!
+            rc.setIndicatorString("minLead: " + mineLeadTo);
         }
+
 
         if (nearbyGold.length > 0) {
             for (MapLocation loc : nearbyGold) {
@@ -206,7 +210,7 @@ public class Miner extends Robot {
         if (needToHeal) { // we need to go heal!
             Pathfinding pathfinder = new SpotNearArchonPathfinding();
             dir = pathfinder.getDirection(myLocation, comms.getLocationClosestFriendlyArchon(), rc);
-            rc.setIndicatorString("Returning to base to heal! ");
+//            rc.setIndicatorString("Returning to base to heal! ");
 
         } else { // we do not need to heal, focus on mining!
             if (ResourceLocations.size() > 0) { // there are resource deposits nearby
@@ -217,21 +221,21 @@ public class Miner extends Robot {
                 if (combatantsNearResource.length > 0) {
                     // there are enemy combatants nearby the resource!
                     dir = new BestOppositePathfinding().getDirection(myLocation, combatantsNearResource[0].location, rc);
-                    rc.setIndicatorString("enemies near resource!");
+//                    rc.setIndicatorString("enemies near resource!");
                 } else {
-                    rc.setIndicatorString("heading towards " + targetResource.loc + " to mine");
+//                    rc.setIndicatorString("heading towards " + targetResource.loc + " to mine");
                     dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetResource.loc, rc);
                 }
 
             } else { // no resource nearby!
                 if (nearbyEnemyCombatants.length > 0) { // there are enemy combatants nearby!
                     dir = new BestOppositePathfinding().getDirection(myLocation, nearbyEnemyCombatants[0].location, rc);
-                    rc.setIndicatorString("enemies nearby!");
+//                    rc.setIndicatorString("enemies nearby!");
                     // force reset target location, so we do not keep going towards enemy
                     targetPathfindingLocation = null;
 
                 } else { // coast is clear
-                    rc.setIndicatorString("Going toward " + targetPathfindingLocation);
+//                    rc.setIndicatorString("Going toward " + targetPathfindingLocation);
                     dir = new WeightedRandomDirectionBasedPathfinding().getDirection(myLocation, targetPathfindingLocation, rc);
                 }
             }
