@@ -57,11 +57,12 @@ public class AStarOpen {
     /**
      * Checks whether a node is open.
      *
-     * @param node to check
-     * @return whether node is open
+     * @param x coordinate of node to check
+     * @param y coordinate of node to check
+     * @return whether node at given location is open
      */
-    public boolean isOpen(AStarNode node) {
-        return openSet[node.place.x][node.place.y] > 0;
+    public boolean isOpen(int x, int y) {
+        return openSet[x][y] > 0;
     }
 
     /**
