@@ -16,7 +16,7 @@ public class AStarPathfinding implements Pathfinding {
 
     public ArrayList<MapLocation> retrace_steps(AStarNode start, AStarNode end) {
         AStarNode currentNode = end;
-        ArrayList<MapLocation> path = new ArrayList<MapLocation>();
+        ArrayList<MapLocation> path = new ArrayList<>();
         while (currentNode != start) {
             path.add(currentNode.place);
             currentNode = currentNode.previous;
@@ -39,7 +39,6 @@ public class AStarPathfinding implements Pathfinding {
         AStarNode startNode = new AStarNode(null, source, 0, distance, distance);
         AStarNode endNode = new AStarNode(null, target, Integer.MAX_VALUE, 0, Integer.MAX_VALUE);
 
-        AStarNode childNode;
         AStarNode openNode;
         open.insert(startNode); // add start node to open lis
 
@@ -57,10 +56,13 @@ public class AStarPathfinding implements Pathfinding {
                     if (locationOnMap(childPlace) && childPlace.isWithinDistanceSquared(target, VisionRange) &&
                             (!closed.contains(childPlace))) { // Should only check pos
                         distance = Math.max(Math.abs(target.x - childPlace.x), Math.abs(target.y - childPlace.y));
+
+                        // get child node if it exists in open already, else add a new one
+                        AStarNode childNode;
                         childNode = new AStarNode(currentNode, childPlace, currentNode.GCost + 1, distance, 0); //rc.senseRubble(currentNode.place)
                         childNode.FCost = childNode.HCost + childNode.GCost;
 
-                        if (open.isOpen(childNode)) {
+                        if (open.isOpen(childNode.place.x, childNode.place.y)) {
                             openNode = open.getNodeAtLoc(childPlace.x, childPlace.y);
                             if (childNode.compareToG(openNode) < 0) {
                                 open.updateNode(openNode, childNode.GCost, childNode.FCost, childNode.previous);
@@ -68,6 +70,8 @@ public class AStarPathfinding implements Pathfinding {
                         } else {
                             open.insert(childNode);
                         }
+
+
                     }
                 }
             }
@@ -95,7 +99,7 @@ public class AStarPathfinding implements Pathfinding {
         return Direction.CENTER;
     }
 
-    private boolean locationOnMap(MapLocation loc){
+    private boolean locationOnMap(MapLocation loc) {
         return loc.x >= 0 && loc.x < mapWidth && loc.y >= 0 && loc.y < mapHeight;
     }
 }
