@@ -12,10 +12,11 @@ public class FirstCommunication implements Communication {
     private final static int NUMBER_MAX_ARCHONS = 4;
 
     private final static int INDEX_STATE = 1; // 1
-    private final static int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
-    private final static int INDEX_START_ENEMY_ARCHON = 4; // 4,5,6,7
-    private final static int INDEX_START_COUNTERS = 12; // uses 2 per archon, so 12,13,14,15,16,17,18,19
     private final static int INDEX_BASE_SCORE_AND_POTENTIAL_ENEMY_COUNTER = 2; // 2, left 11 bits base score
+    private final static int INDEX_BASE_LOCATION = 3;
+    private final static int INDEX_START_ENEMY_ARCHON = 4; // 4,5,6,7
+    private final static int INDEX_START_FRIENDLY_ARCHON = 8; // 8,9,10,11
+    private final static int INDEX_START_COUNTERS = 12; // uses 2 per archon, so 12,13,14,15,16,17,18,19
     private final static int INDEX_START_POTENTIAL_ENEMY_ARRAY = 20; // 20 onwards
 
 
@@ -85,16 +86,24 @@ public class FirstCommunication implements Communication {
     }
 
     /**
-     * Minimum score is 0, max score is 2047
+     * Minimum score is 0, max score is 2047. Assumes input score is in this range!
+     * Costs a little over 200 bytecode (2 array writes)
      */
     @Override
     public void setBestBaseLocation(MapLocation loc, int score) throws GameActionException {
+        // write base location
+        rc.writeSharedArray(INDEX_BASE_LOCATION, locationEncoder(loc));
 
+        // write base score
+        int other = rc.readSharedArray(INDEX_BASE_SCORE_AND_POTENTIAL_ENEMY_COUNTER) & 0b0000000000011111;
+        rc.writeSharedArray(INDEX_BASE_SCORE_AND_POTENTIAL_ENEMY_COUNTER, other + (score << 5));
     }
 
     @Override
     public LocationWithValue getBestBaseLocation() throws GameActionException {
-        return null;
+        MapLocation loc = locationDecoder(rc.readSharedArray(INDEX_BASE_LOCATION));
+        int score = rc.readSharedArray(INDEX_BASE_SCORE_AND_POTENTIAL_ENEMY_COUNTER);
+        return new LocationWithValue(loc, score);
     }
 
     @Override
