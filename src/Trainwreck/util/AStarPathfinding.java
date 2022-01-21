@@ -42,10 +42,11 @@ public class AStarPathfinding implements Pathfinding {
         AStarNode openNode;
         open.insert(startNode); // add start node to open lis
 
+
         while (!open.isEmpty()) { //Check if list is empty
-            AStarNode currentNode = open.popBest(); //Get the node with the lowest f-cost, maybe other data structure
+            AStarNode currentNode = open.popBest();
             closed.add(currentNode.place);
-            if (currentNode.place == endNode.place) {
+            if (currentNode.place.x == endNode.place.x && currentNode.place.y == endNode.place.y) {
                 return retrace_steps(startNode, currentNode);
             }
 
@@ -62,13 +63,17 @@ public class AStarPathfinding implements Pathfinding {
                         childNode = new AStarNode(currentNode, childPlace, currentNode.GCost + 1, distance, 0); //rc.senseRubble(currentNode.place)
                         childNode.FCost = childNode.HCost + childNode.GCost;
 
-                        if (open.isOpen(childNode.place.x, childNode.place.y)) {
-                            openNode = open.getNodeAtLoc(childPlace.x, childPlace.y);
-                            if (childNode.compareToG(openNode) < 0) {
-                                open.updateNode(openNode, childNode.GCost, childNode.FCost, childNode.previous);
+                        try {
+                            if (open.isOpen(childNode.place.x, childNode.place.y)) {
+                                openNode = open.getNodeAtLoc(childPlace.x, childPlace.y);
+                                if (childNode.compareToG(openNode) < 0) {
+                                    open.updateNode(openNode, childNode.GCost, childNode.FCost, childNode.previous);
+                                }
+                            } else {
+                                open.insert(childNode);
                             }
-                        } else {
-                            open.insert(childNode);
+                        } catch (Exception e) {
+                            throw new RuntimeException("INNER");
                         }
 
 
@@ -76,6 +81,7 @@ public class AStarPathfinding implements Pathfinding {
                 }
             }
         }
+
         return null;
     }
 
@@ -91,9 +97,14 @@ public class AStarPathfinding implements Pathfinding {
 
         try {
             ArrayList<MapLocation> path = findPath(source, target, rc);
+
+            if (path == null) {
+                throw new Exception("Path is null!");
+            }
+
             return source.directionTo(path.get(path.size() - 1));
         } catch (Exception e) {
-            rc.setIndicatorString("" + e);
+            rc.setIndicatorString("Top level: " + e);
         }
 
         return Direction.CENTER;
