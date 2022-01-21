@@ -32,7 +32,7 @@ public class AStarPathfinding implements Pathfinding {
 //        }
 
         AStarOpen open = new AStarOpen(5 * VisionRange); //Actually 4*Range + 4*sqrt(Range)+1
-        HashSet<MapLocation> closed = new HashSet<>(300);
+        HashSet<MapLocation> closed = new HashSet<>(5*VisionRange);
         // TODO overwrite hash function
 
         int distance = Math.max(Math.abs(target.x - source.x), Math.abs(target.y - source.y));
@@ -46,7 +46,7 @@ public class AStarPathfinding implements Pathfinding {
         while (!open.isEmpty()) { //Check if list is empty
             AStarNode currentNode = open.popBest();
             closed.add(currentNode.place);
-            if (currentNode.place.x == endNode.place.x && currentNode.place.y == endNode.place.y) {
+            if ((currentNode.place.x == endNode.place.x) && (currentNode.place.y == endNode.place.y)) {
                 return retrace_steps(startNode, currentNode);
             }
 
@@ -54,8 +54,8 @@ public class AStarPathfinding implements Pathfinding {
                 for (int j = currentNode.place.y - 1; j < currentNode.place.y + 2; j++) { //Loop over all Adjacent nodes
                     MapLocation childPlace = new MapLocation(i, j);
 
-                    if (locationOnMap(childPlace) && childPlace.isWithinDistanceSquared(target, VisionRange) &&
-                            (!closed.contains(childPlace))) { // Should only check pos
+                    if (childPlace.isWithinDistanceSquared(target, VisionRange) && locationOnMap(childPlace) &&
+                            (!closed.contains(childPlace))) {
                         distance = Math.max(Math.abs(target.x - childPlace.x), Math.abs(target.y - childPlace.y));
 
                         // get child node if it exists in open already, else add a new one
