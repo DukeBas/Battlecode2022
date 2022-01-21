@@ -25,15 +25,31 @@ public class AStarNode implements Comparable<AStarNode> {
      */
     @Override
     public int compareTo(AStarNode o) {
-        if (o == null){
+        if (o == null) {
             return -1; // doesn't make too much sense but makes A* work nicely
         }
         return Integer.compare(this.FCost, o.FCost);
     }
+
     public int compareToG(AStarNode o) {
-        if (o == null){
+        if (o == null) {
             return -1; // doesn't make too much sense but makes A* work nicely
         }
         return Integer.compare(this.GCost, o.GCost);
+    }
+
+    /*
+     * We compare AStarNode solely on location!!
+     */
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || getClass() != obj.getClass()) return false;
+        return this.hashCode() == obj.hashCode();
+    }
+
+    @Override
+    public int hashCode() {
+        return this.place.x << 8 + this.place.y;
     }
 }

@@ -1,5 +1,9 @@
 package Trainwreck.util;
 
+import battlecode.common.MapLocation;
+
+import java.util.HashMap;
+
 /**
  * Uses minHeap and 2d pointer array to quickly get highest priority node and search if a node has been seen before.
  */
@@ -9,11 +13,16 @@ public class AStarOpen {
     private int size; // current size of heap
     private final AStarNode[] heap; // do not use index 0 for ease of use
 
+//    /*
+//     * 2d array to keep location indices in heap. 0 indicates not in heap.
+//     * Uses 61x61 because map is max 60x60 and we do not use 0 indices.
+//     */
+//    private final int[][] openSet = new int[61][61];
+
     /*
-     * 2d array to keep location indices in heap. 0 indicates not in heap.
-     * Uses 61x61 because map is max 60x60 and we do not use 0 indices.
+     * HashMap to keep location indices in the heap.
      */
-    private final int[][] openSet = new int[61][61];
+    private final HashMap<AStarNode, Integer> openMap = new HashMap<>(30);
 
 
     /**
@@ -45,7 +54,8 @@ public class AStarOpen {
         /*
          * Add to open set
          */
-        openSet[node.place.x][node.place.y] = current;
+//        openSet[node.place.x][node.place.y] = current;
+        openMap.put(node, current);
 
 
         while (current != 1 && heap[current].compareTo(heap[parentPos(current)]) < 0) {
@@ -55,14 +65,14 @@ public class AStarOpen {
     }
 
     /**
-     * Checks whether a node is open.
+     * Checks whether a node with the same location is in open
      *
-     * @param x coordinate of node to check
-     * @param y coordinate of node to check
+     * @param node to check !NOTE AStarNode is only hashed on location coordinates!
      * @return whether node at given location is open
      */
-    public boolean isOpen(int x, int y) {
-        return openSet[x][y] > 0;
+    public boolean isOpen(AStarNode node) {
+//        return openSet[x][y] > 0;
+        return openMap.containsKey(node);
     }
 
     /**
@@ -97,19 +107,22 @@ public class AStarOpen {
      * @return position of node
      */
     private int getPosNode(AStarNode node) {
-        int pos = openSet[node.place.x][node.place.y];
-        return pos > 0 ? pos : -1;
+//        int pos = openSet[node.place.x][node.place.y];
+//        return pos > 0 ? pos : -1;
+        if (openMap.get(node) == null){
+            return -1;
+        }
+        return openMap.get(node);
     }
 
     /**
      * Gets the AStarNode at a position.
      *
-     * @param x coordinate
-     * @param y coordinate
+     * @param node node with the same location as the one we want to check for
      * @return AStarNode at that location if it is known
      */
-    public AStarNode getNodeAtLoc(int x, int y) {
-        return heap[openSet[x][y]];
+    public AStarNode getNodeAtLoc(AStarNode node) {
+        return heap[getPosNode(node)];
     }
 
     /**
@@ -132,7 +145,8 @@ public class AStarOpen {
         /*
          * Remove from open set
          */
-        openSet[node.place.x][node.place.y] = 0;
+//        openSet[node.place.x][node.place.y] = 0;
+        openMap.remove(node);
 
         return node;
     }
@@ -188,8 +202,10 @@ public class AStarOpen {
         AStarNode temp = heap[a];
 
         // swap locations in arrays
-        openSet[heap[a].place.x][heap[a].place.y] = b;
-        openSet[heap[b].place.x][heap[b].place.y] = a;
+//        openSet[heap[a].place.x][heap[a].place.y] = b;
+//        openSet[heap[b].place.x][heap[b].place.y] = a;
+        openMap.put(heap[a], b);
+        openMap.put(heap[b], a);
 
         // do the swap
         heap[a] = heap[b];
