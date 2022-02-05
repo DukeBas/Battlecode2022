@@ -1,6 +1,6 @@
-# Battlecode 2022 Scaffold
+# Battlecode 2022
 
-This is the Battlecode 2022 scaffold, containing an `examplefuncsplayer`. Read https://play.battlecode.org/getting-started!
+This repository, based on the Battlecode 2022 scaffold, contains the bot we developed while competing in Battlecode 2022.
 
 ### Project Structure
 
