@@ -52,6 +52,27 @@ public class Archon extends Robot {
      */
     private static final int BUILDER_START_TURN = 300;
 
+    /**
+     * Last turn we built a miner.
+     */
+    private int lastBuiltMinerTurn = -1;
+
+    /**
+     * When looking around an archon if we need more miners, what is the minimum amount lead per tile to consider.
+     * If we set this too low we will likely keep producing miners.
+     */
+    private static final int MIN_LEAD_TO_CONSIDER_NEARBY = 10;
+
+    /**
+     * At how many unmined rich lead tiles nearby do we consider adding a friendly miner.
+     */
+    private static final int RICH_LEAD_TILES_NEARBY_IS_MANY = 5;
+
+    /**
+     * Late game, turns between miners.
+     */
+    private static final int LATE_TURNS_BETWEEN_MINERS = 40;
+
     public Archon(RobotController rc) throws GameActionException {
         super(rc);
 
@@ -190,11 +211,21 @@ public class Archon extends Robot {
 
                 } else {
                     /*
-                     * Late(r) game strategy. Mainly build soldiers, replenish
+                     * Mid game strategy. Mainly build soldiers, replenish
                      * miners every now and then. Also make some builders to
                      * get labs and watchtowers out, as a more defensive
                      * strategy.
+                     *
+                     * Late game: replenish miners up to minimum to farm field
                      */
+
+                    // If we can't keep up with lead around us, make a new miner if we haven't recently
+                    MapLocation[] richLeadNearby = rc.senseNearbyLocationsWithLead(visionRadiusSquared,
+                            MIN_LEAD_TO_CONSIDER_NEARBY);
+                    if (turnCount - lastBuiltMinerTurn > LATE_TURNS_BETWEEN_MINERS &&
+                    richLeadNearby.length > RICH_LEAD_TILES_NEARBY_IS_MANY){
+                        toBuild = RobotType.MINER;
+                    }
 
                     // do we need more miners? If so, higher chance to make one
                     if (numberOfMiners < minersNeeded) {
@@ -214,6 +245,12 @@ public class Archon extends Robot {
 
                 // build the desired robot if we can
                 if (rc.canBuildRobot(toBuild, dir)) {
+
+                    // set last build turn
+                    if (toBuild == RobotType.MINER){
+                        lastBuiltMinerTurn = turnCount;
+                    }
+
                     rc.buildRobot(toBuild, dir);
                 }
 

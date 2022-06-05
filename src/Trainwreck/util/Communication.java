@@ -39,6 +39,21 @@ public interface Communication {
     int getArchonOrder(int ArchonID) throws GameActionException;
 
     /**
+     * Writes the best base location with corresponding score to shared memory.
+     *
+     * @param loc   proposed location of the base.
+     * @param score of the place
+     */
+    void setBestBaseLocation(MapLocation loc, int score) throws GameActionException;
+
+    /**
+     * Gets the currently known best base location to set up.
+     *
+     * @return location of base and accompanying score.
+     */
+    LocationWithValue getBestBaseLocation() throws GameActionException;
+
+    /**
      * Gets all the locations of friendly archons on the map.
      *
      * @return locations of friendly archons
