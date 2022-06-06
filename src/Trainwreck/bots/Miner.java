@@ -13,7 +13,7 @@ public class Miner extends Robot {
     private boolean needToHeal;
 
     private boolean hardSearch = false; // go to target location without stopping for lead tiles under...
-    private final static int MIN_LEAD_HARD_SEARCH = 5;
+    private final static int MIN_LEAD_HARD_SEARCH = 10;
 
     // what r^2 of an archon we consider friendly base
     private final static int FRIENDLY_BASE_RANGE = 34;
